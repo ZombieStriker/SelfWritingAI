@@ -1,6 +1,5 @@
 package me.zombie_striker.swai.game.buildabot;
 
-import me.zombie_striker.swai.Main;
 import me.zombie_striker.swai.assignablecode.*;
 import me.zombie_striker.swai.assignablecode.statements.*;
 import me.zombie_striker.swai.data.PersonalityMatrix;
@@ -35,7 +34,7 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
         this.creator = creator;
         this.interpreter = interpreter;
         if (gametype == GameEnum.PONG) {
-            matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, true);
+            matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, false,1);
             game = new PongGame(matrixToWorkOn, this, 0);
         }
     }
@@ -135,7 +134,7 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     }
 
     @Override
-    public Image render() {
+    public BufferedImage render() {
         if (goodToGo) {
             return game.render();
         }
@@ -165,15 +164,15 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     @Override
     public int[] getVision() {
         int batch = 5;
-        int[] linesOfCode = new int[100 * batch + 1];
+        int[] linesOfCode = new int[100 * batch + 2];
         for (int i = Math.max(0, indexOfWritingCode - 50); i < Math.min(indexOfWritingCode + 50, matrixToWorkOn.getCode().length); i++) {
             int lineCode = -1;
             int variable1 = -1;
             int variable2 = -1;
             int variable3 = -1;
-            if (matrixToWorkOn.getCode()[i] == null || matrixToWorkOn.getCode()[i] instanceof AssignablePostField) {
+           /* if (matrixToWorkOn.getCode()[i] == null || matrixToWorkOn.getCode()[i] instanceof AssignablePostField) {
                 lineCode = 0;
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableReturn) {
+            } else */if (matrixToWorkOn.getCode()[i] instanceof AssignableReturn) {
                 lineCode = 1;
             } else if (matrixToWorkOn.getCode()[i] instanceof AssignableField) {
                 lineCode = 2;
@@ -235,6 +234,13 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
 
         }
         linesOfCode[100 * batch] = gameScore;
+        linesOfCode[100 * batch+1] = goodToGo?1:0;
+        if(goodToGo){
+            int[] gamevision = game.getVision();
+            for(int i = 0; i < Math.min(gamevision.length,17);i++){
+                linesOfCode[batch+2+i] = gamevision[i];
+            }
+        }
         return linesOfCode;
     }
 
@@ -252,20 +258,20 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
 
     public void onTerminate(PersonalityMatrix controller) {
         if (rewriteAttempts >= 50) {
-            interpreter.increaseScore(creator, 1000 * highestGameScore);
             interpreter.onTerminate(creator);
             return;
         }
         goodToGo = false;
         indexOfWritingCode = 0;
         interationsOfWritingCode = 0;
-        gameScore = 0;
         if (highestGameScore < gameScore) {
             highestGameScore = gameScore;
+            interpreter.increaseScore(creator, 1000 * highestGameScore);
         }
+        gameScore = 0;
         rewriteAttempts++;
 
-        matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, true);
+        matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, false, 1);
         game = gametype.createNewGame(matrixToWorkOn, this, 1);
     }
 

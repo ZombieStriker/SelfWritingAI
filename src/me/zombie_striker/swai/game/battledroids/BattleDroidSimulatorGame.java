@@ -231,7 +231,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
     }
 
     @Override
-    public Image render() {
+    public BufferedImage render() {
         BufferedImage subimage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         Graphics2D gs = (Graphics2D) subimage.getGraphics();
         int[] visionDistance = getVisionDistance();

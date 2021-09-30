@@ -26,8 +26,8 @@ public class AssignableField extends AssignableCode{
     @Override
     public String toString() {
         if(readonly)
-            return "FIELD-RO "+getName()+" = "+referenceID +" ("+ DataBank.translate(matrix.getPalletReadOnly()[referenceID])+")";
-        return "FIELD "+getName()+" = "+referenceID +" ("+ DataBank.translate(matrix.getPallet()[referenceID])+")";
+            return "FIELDRO ("+getName()+","+referenceID +")";
+        return "FIELD ("+getName()+","+referenceID +")";
     }
 
     @Override

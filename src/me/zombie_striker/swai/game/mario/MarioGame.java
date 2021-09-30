@@ -152,7 +152,7 @@ public class MarioGame extends AbstractGame {
     int screentilewidth = 10;
 
     @Override
-    public Image render() {
+    public BufferedImage render() {
         BufferedImage subimage = new BufferedImage(screentilewidth * tilesize, tilesAroundChar[(int) (0 / tilesize)].length * tilesize, BufferedImage.TYPE_INT_RGB);
         Graphics2D gs = (Graphics2D) subimage.getGraphics();
         if (fail) {

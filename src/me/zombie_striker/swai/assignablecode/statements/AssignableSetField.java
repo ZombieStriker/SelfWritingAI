@@ -22,36 +22,28 @@ public class AssignableSetField extends AssignableStatement {
 
     public void call() {
         if (useField) {
-            if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField) {
-                if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
-                    return;
-                matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = ((AssignableField) matrix.getCode()[palletIndex]).getObjectInstance();
-            }
+            if (fieldindex >= 0 && matrix.getCode().length > fieldindex)
+                if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField) {
+                    if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
+                        return;
+                    matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = ((AssignableField) matrix.getCode()[palletIndex]).getObjectInstance();
+                }
         } else {
-            if (matrix.getCode()[fieldindex] instanceof AssignableField) {
-                if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
-                    return;
-                matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = matrix.getPallet()[palletIndex];
-            }
+            if (fieldindex >= 0 && matrix.getCode().length > fieldindex)
+                if (matrix.getCode()[fieldindex] instanceof AssignableField) {
+                    if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
+                        return;
+                    matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = matrix.getPallet()[palletIndex];
+                }
         }
     }
 
     @Override
     public String toString() {
         if (useField) {
-            if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField)
-                if(matrix.getByteForField(fieldindex) >= 0 && matrix.getByteForField(fieldindex) < matrix.getPallet().length)
-                return "SET (" + fieldindex + " | " + useField + " |" + palletIndex + ");   (" + (
-                        matrix.getPallet()[matrix.getByteForField(fieldindex)] + " | " + ((AssignableField) matrix.getCode()[palletIndex]).getObjectInstance()
-                ) + ")";
-            return "SET (" + fieldindex + " | " + useField + " |" + palletIndex + "); (INVALID)";
+            return "SETF(" + fieldindex + "," + palletIndex + "); ";
         } else {
-            if (matrix.getCode()[fieldindex] instanceof AssignableField)
-
-                return "SET (" + fieldindex + " | " + useField + " |" + palletIndex + ");   (" + (
-                        matrix.getPallet()[matrix.getByteForField(fieldindex)] + " | " + matrix.getPallet()[palletIndex]
-                ) + ")";
-            return "SET (" + fieldindex + " | " + useField + " |" + palletIndex + "); (INVALID)";
+            return "SET (" + fieldindex + "," + palletIndex + "); ";
         }
     }
 
@@ -59,10 +51,12 @@ public class AssignableSetField extends AssignableStatement {
     public AssignableCode clone(PersonalityMatrix matrix) {
         return new AssignableSetField(matrix, fieldindex, useField, palletIndex);
     }
+
     public int getField() {
         return fieldindex;
     }
-    public int getSecondField(){
+
+    public int getSecondField() {
         return palletIndex;
     }
 

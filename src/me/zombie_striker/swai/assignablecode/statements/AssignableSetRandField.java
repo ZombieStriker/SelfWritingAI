@@ -5,17 +5,22 @@ import me.zombie_striker.swai.assignablecode.AssignableField;
 import me.zombie_striker.swai.assignablecode.AssignableStatement;
 import me.zombie_striker.swai.data.PersonalityMatrix;
 
-public class AssignableIncrementBy extends AssignableStatement {
+import java.util.Random;
+
+public class AssignableSetRandField extends AssignableStatement {
 
     private PersonalityMatrix matrix;
     private int fieldindex;
     private int palletIndex;
+    private int magicNumber;
+    private int magicInc = 0;
 
-    public AssignableIncrementBy(PersonalityMatrix matrix, int fieldindex, int palletIndex) {
-        super("INCBY", null);
+    public AssignableSetRandField(PersonalityMatrix matrix, int magicNumber, int fieldindex, int palletIndex) {
+        super("RAND", null);
         this.matrix = matrix;
         this.fieldindex = fieldindex;
         this.palletIndex = palletIndex;
+        this.magicNumber = magicNumber;
     }
 
     public void call() {
@@ -23,28 +28,29 @@ public class AssignableIncrementBy extends AssignableStatement {
             if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField) {
                 if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
                     return;
-                if (matrix.getByteForField(palletIndex) < 0 || matrix.getByteForField(palletIndex) >= matrix.getPallet().length)
-                    return;
-                matrix.getPallet()[matrix.getByteForField(palletIndex)] =
-                        (byte) (matrix.getByteForField(palletIndex) + (matrix.getPallet()[matrix.getByteForField(palletIndex)]));
+                Random random = new Random(magicNumber * (magicInc + 1));
+                magicInc++;
+                int i = ((AssignableField) matrix.getCode()[palletIndex]).getObjectInstance();
+                if (i > 0)
+                    matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = random.nextInt(i);
             }
     }
 
     @Override
     public String toString() {
-        return "INCBY (" + fieldindex + "," + palletIndex + ");";
+        return "RAND (" + fieldindex + "," + palletIndex + ");";
     }
 
     @Override
     public AssignableCode clone(PersonalityMatrix matrix) {
-        return new AssignableIncrementBy(matrix, fieldindex, palletIndex);
+        return new AssignableSetRandField(matrix, magicNumber, fieldindex, palletIndex);
     }
 
     public int getField() {
         return fieldindex;
     }
 
-    public int getIncrementField() {
+    public int getSecondField() {
         return palletIndex;
     }
 }

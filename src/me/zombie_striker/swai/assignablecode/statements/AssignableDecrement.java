@@ -17,28 +17,20 @@ public class AssignableDecrement extends AssignableStatement {
     }
 
     public void call() {
-        if(fieldindex >= 0 && matrix.getCode().length > fieldindex)
-        if(matrix.getCode()[fieldindex] instanceof AssignableField) {
-            if(((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
-            return;
-            if(matrix.getByteForField(fieldindex)<0 || matrix.getByteForField(fieldindex)  >= matrix.getPallet().length )
-    return;
+        if (fieldindex >= 0 && matrix.getCode().length > fieldindex)
+            if (matrix.getCode()[fieldindex] instanceof AssignableField) {
+                if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
+                    return;
+                if (matrix.getByteForField(fieldindex) < 0 || matrix.getByteForField(fieldindex) >= matrix.getPallet().length)
+                    return;
                 matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = (byte) (matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] - 1);
 
-        }
+            }
     }
 
     @Override
     public String toString() {
-        if(matrix.getCode()[fieldindex] instanceof AssignableField)
-            if(matrix.getByteForField(fieldindex)>=0 && matrix.getByteForField(fieldindex)  < matrix.getPallet().length )
-                return "DECREMENT (" + matrix.getCode()[fieldindex] .getName()+"=L"+fieldindex   + ");   (" + (
-                matrix.getPallet()[matrix.getByteForField(fieldindex)]
-        ) + ")";
-        if(matrix.getCode()[fieldindex]==null)
-            return "DECREMENT (INVALID) (INVALID)";
-        return "DECREMENT (" + matrix.getCode()[fieldindex] .getName()+"=L"+fieldindex   + ");   (" +"INVALID"
-         + ")";
+        return "DEC (" + fieldindex + ");";
     }
 
     @Override

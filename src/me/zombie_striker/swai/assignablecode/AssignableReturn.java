@@ -14,6 +14,6 @@ public class AssignableReturn extends AssignableCode {
 
     @Override
     public String toString() {
-        return "RETURN";
+        return "RETURN;";
     }
 }

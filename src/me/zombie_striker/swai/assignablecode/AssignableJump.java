@@ -26,12 +26,12 @@ public class AssignableJump extends AssignableCode{
     public String toString() {
         if (useField) {
             if(matrix.getCode()[lineToSkipTo] instanceof AssignableField) {
-                return "JUMP (" + matrix.getCode()[lineToSkipTo] .getName()+"=L"+lineToSkipTo + ")  (" + matrix.getByteForField(lineToSkipTo) + ")";
+                return "JUMP ("+lineToSkipTo + ")  (" + matrix.getByteForField(lineToSkipTo) + ")";
             }else{
                 return "JUMP (INVALID)";
             }
         } else {
-            return "JUMP (" + lineToSkipTo + ")";
+            return "JUMPTO (" + lineToSkipTo + ")";
         }
     }
 

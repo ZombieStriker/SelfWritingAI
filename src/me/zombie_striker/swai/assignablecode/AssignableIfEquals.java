@@ -36,8 +36,8 @@ public class AssignableIfEquals extends AssignableCode{
     @Override
     public String toString() {
         if(matrix.getCode()[pallet1] instanceof AssignableField && matrix.getCode()[pallet2] instanceof AssignableField)
-        return "IF EQUALS ("+pallet1+" "+(matrix.getCode()[pallet1].getName()+" | "+pallet2+" "+matrix.getCode()[pallet2].getName())+") (SKIPS "+skippablelines+")";
-        return "IF EQUALS ("+pallet1+" | "+pallet2+" INVALID)";
+        return "IFEQUALS ("+pallet1+","+pallet2+","+skippablelines+")";
+        return "IFEQUALS ("+pallet1+","+pallet2+",INVALID)";
     }
 
     @Override

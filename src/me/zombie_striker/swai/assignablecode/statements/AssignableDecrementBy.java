@@ -32,16 +32,7 @@ public class AssignableDecrementBy extends AssignableStatement {
 
     @Override
     public String toString() {
-        if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField) {
-
-            if(matrix.getByteForField(palletIndex) >= 0 && matrix.getByteForField(palletIndex) < matrix.getPallet().length)
-            return "DECBY (" + matrix.getCode()[fieldindex] .getName()+"=L"+fieldindex  + " | " + palletIndex + ");   (" + (
-                    matrix.getPallet()[matrix.getByteForField(palletIndex)] + " | " + matrix.getByteForField(palletIndex)
-            ) + ")";
-        }
-        if(matrix.getCode()[fieldindex]==null)
-            return "DECBY (INVALID) (INVALID)";
-            return "DECBY (" + matrix.getCode()[fieldindex] .getName()+"=L"+fieldindex  + " | " + palletIndex + ");   (INVALID)";
+            return "DECBY (" +fieldindex  + " ," + palletIndex + "); ";
 
     }
 

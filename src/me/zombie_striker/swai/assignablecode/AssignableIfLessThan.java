@@ -37,8 +37,8 @@ public class AssignableIfLessThan extends AssignableCode{
     @Override
     public String toString() {
         if(matrix.getCode()[pallet1] instanceof AssignableField && matrix.getCode()[pallet2] instanceof AssignableField)
-            return "IF LESS THAN ("+pallet1+" "+(matrix.getCode()[pallet1].getName()+" | "+pallet2+" "+matrix.getCode()[pallet2].getName())+") (SKIPS "+skippablelines+")";
-        return "IF LESS THAN ("+pallet1+" | "+pallet2+" INVALID)";
+            return "IFLESSTHAN ("+pallet1+","+pallet2+","+skippablelines+")";
+        return "IFLESSTHAN ("+pallet1+" , "+pallet2+", INVALID)";
     }
 
     @Override

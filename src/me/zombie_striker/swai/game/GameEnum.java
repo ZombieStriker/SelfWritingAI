@@ -5,13 +5,15 @@ import me.zombie_striker.swai.game.battledroids.BattleDroidSimulatorGame;
 import me.zombie_striker.swai.game.buildabot.BuildABotGame;
 import me.zombie_striker.swai.game.mario.MarioGame;
 import me.zombie_striker.swai.game.pong.PongGame;
+import me.zombie_striker.swai.game.writetext.WriteTextGame;
 import me.zombie_striker.swai.world.Interpreter;
 
 public enum GameEnum {
     PONG,
     MARIO,
     BATTLE,
-    BUILDAPONG;
+    BUILDAPONG,
+    WRITE;
 
     public AbstractGame createNewGame(PersonalityMatrix matrix, Interpreter interpreter, int round){
         if(this==PONG)
@@ -22,6 +24,8 @@ public enum GameEnum {
             return new BattleDroidSimulatorGame(matrix,interpreter,round);
         if(this==BUILDAPONG)
             return new BuildABotGame(matrix,interpreter, PONG);
+        if(this==WRITE)
+            return new WriteTextGame(matrix,interpreter, round);
 
         return null;
     }

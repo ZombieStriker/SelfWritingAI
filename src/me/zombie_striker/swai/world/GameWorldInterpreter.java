@@ -1,7 +1,6 @@
 package me.zombie_striker.swai.world;
 
 import me.zombie_striker.swai.Main;
-import me.zombie_striker.swai.PostCall;
 import me.zombie_striker.swai.data.PersonalityMatrix;
 
 import java.util.ArrayList;
@@ -17,16 +16,16 @@ public class GameWorldInterpreter implements Interpreter {
         return persons;
     }
 
-    public PersonalityMatrix createPersonality(int linesofcode, int objectsINRam, int inputsize, int readonlySize) {
-        PersonalityMatrix mat = new PersonalityMatrix(linesofcode, objectsINRam, inputsize, readonlySize, false);
+    public PersonalityMatrix createPersonality(int linesofcode, int objectsINRam, int inputsize, int readonlySize, boolean genPersonality) {
+        PersonalityMatrix mat = new PersonalityMatrix(linesofcode, objectsINRam, inputsize, readonlySize, genPersonality,1);
         persons.add(mat);
         return mat;
     }
 
     public void onTerminate(PersonalityMatrix controller) {
-        Main.game.get(controller).onTerminate();
-        Main.game.remove(controller);
-        if (Main.game.size() < Main.PERSONALITIES_PER_ROW) {
+        Main.games.get(controller).onTerminate();
+        Main.games.remove(controller);
+        if (Main.games.size() < 1) {
             Main.reset = true;
         }
     }
@@ -34,27 +33,27 @@ public class GameWorldInterpreter implements Interpreter {
 
     public void tick() {
         long lastTime = System.currentTimeMillis();
-        for (int j = 0; j < 20; j++) {
+        for (int j = 0; j < 200; j++) {
             if (System.currentTimeMillis() - lastTime > 11)
                 break;
             boolean gametick = false;
             for (PersonalityMatrix matrix : getMatrices()) {
-                if (Main.game.containsKey(matrix)) {
+                if (Main.games.containsKey(matrix)) {
                     if (!gametick) {
                         gametick = true;
-                        Main.game.get(matrix).gameTick();
+                        Main.games.get(matrix).gameTick();
                     }
-                    int[] vision = Main.game.get(matrix).getVision();
+                    int[] vision = Main.games.get(matrix).getVision();
                     for (int i = 0; i < vision.length; i++) {
                         matrix.getPalletReadOnly()[i] = vision[i];
                     }
                     int linesRan = matrix.run(false, -1);
-                    Main.game.get(matrix).handleInputs(handleInputs(matrix));
-                    Main.game.get(matrix).tick(linesRan);
+                    Main.games.get(matrix).handleInputs(handleInputs(matrix));
+                    Main.games.get(matrix).tick(linesRan);
                 }
             }
         }
-        new PostCall().call();
+        Main.postCall();
     }
 
     public int[] handleInputs(PersonalityMatrix matrix) {
@@ -103,7 +102,7 @@ public class GameWorldInterpreter implements Interpreter {
         if (scores.containsKey(matrix)) {
             scores.put(matrix, scores.get(matrix) + score);
         } else {
-            scores.put(matrix, score);
+            scores.put(matrix, Math.max(0,score));
         }
 
     }

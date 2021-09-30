@@ -1,13 +1,13 @@
 package me.zombie_striker.swai.game;
 
-import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public abstract class AbstractGame {
     public abstract void handleInputs(int[] inputs);
 
     public abstract void tick(int linesRan);
 
-    public abstract Image render();
+    public abstract BufferedImage render();
 
     public abstract void onTerminate();
 

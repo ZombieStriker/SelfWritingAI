@@ -17,7 +17,7 @@ public class AssignableGoSub extends AssignableCode{
 
     @Override
     public AssignableCode clone(PersonalityMatrix matrix) {
-        return null;
+        return new AssignableGoSub(lineToJumpTo);
     }
 
     @Override

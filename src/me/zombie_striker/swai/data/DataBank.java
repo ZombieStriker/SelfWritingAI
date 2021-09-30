@@ -1,5 +1,8 @@
 package me.zombie_striker.swai.data;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class DataBank {
@@ -22,6 +25,20 @@ public class DataBank {
         if (value < 0)
             return value + "";
         return chars[value] + "";
+    }
+
+    private static int INCREMENTALRANDOMNESS = 10;
+
+    public static Random seededRandom(int input1, int input2, int input3){
+        Random random1 = new Random(input1);
+        Random random2 = new Random(random1.nextInt(1000)+input1);
+        Random random3 = new Random(random2.nextInt(1000)+random1.nextInt(input1)+input2);
+
+        INCREMENTALRANDOMNESS++;
+        if(INCREMENTALRANDOMNESS> 123456789){
+            INCREMENTALRANDOMNESS=9;
+        }
+        return new Random(random3.nextInt(INCREMENTALRANDOMNESS));
     }
 
     public static byte getIndexOf(char c) {
@@ -47,5 +64,14 @@ public class DataBank {
             }
         }
         return message;
+    }
+
+
+    public static String readFile(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (int ch; (ch = is.read()) != -1; ) {
+            sb.append((char) ch);
+        }
+        return sb.toString();
     }
 }

@@ -1,6 +1,5 @@
 package me.zombie_striker.swai.game.pong;
 
-import me.zombie_striker.swai.Main;
 import me.zombie_striker.swai.data.PersonalityMatrix;
 import me.zombie_striker.swai.game.AbstractGame;
 import me.zombie_striker.swai.world.Interpreter;
@@ -67,6 +66,13 @@ public class PongGame extends AbstractGame {
                 interpreter.increaseScore(controller,100);
             }
         }
+        if(ballX==paddleXOffset){
+            if(paddleHeightOffset < ballY){
+                interpreter.increaseScore(controller,30-(ballY-(paddleHeightOffset+paddleHeight)));
+            }else{
+                interpreter.increaseScore(controller,30-((paddleHeightOffset)-ballY));
+            }
+        }
         if((ballX + ballDirX )> 40*scalar){
             //ballDirX=-ballDirX;
             //fail = true;
@@ -93,7 +99,7 @@ public class PongGame extends AbstractGame {
     }
 
     @Override
-    public Image render() {
+    public BufferedImage render() {
         BufferedImage subimage = new BufferedImage(40, 40, BufferedImage.TYPE_INT_RGB);
         Graphics2D gs = (Graphics2D) subimage.getGraphics();
         if(fail){
