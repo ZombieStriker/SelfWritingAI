@@ -18,7 +18,7 @@ public class Window extends Canvas implements Runnable {
     public Window() {
         window = new JFrame("SWAI View");
         window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        window.setSize(1000, 1000 - 50);
+        window.setSize(1000, 1000+50);
         window.setLayout(new BorderLayout());
         window.add(this, BorderLayout.CENTER);
         window.setResizable(false);

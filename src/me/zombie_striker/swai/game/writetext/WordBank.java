@@ -3,6 +3,7 @@ package me.zombie_striker.swai.game.writetext;
 
 import javax.naming.Name;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -806,7 +807,7 @@ public class WordBank {
         registerWord("everybody",PRONOUNS);
         registerWord("offended",VERBS);
         registerWord("offend",VERBS);
-        registerWord("afriend",ADJECTIVES);
+        registerWord("afraid",ADJECTIVES);
         registerWord("comfits",NOUNS);
         registerWord("hate",VERBS);
         registerWord("magic",NOUNS);
@@ -859,6 +860,33 @@ public class WordBank {
         registerWord("\"", WordType.GRAMMAR);
         registerWord(".", WordType.GRAMMAR);
         registerWord(",", WordType.GRAMMAR);
+        registerWord("@", WordType.GRAMMAR);
+        registerWord("#", WordType.GRAMMAR);
+        registerWord("$", WordType.GRAMMAR);
+        registerWord("%", WordType.GRAMMAR);
+        registerWord("^", WordType.GRAMMAR);
+        registerWord("&", WordType.GRAMMAR);
+        registerWord("*", WordType.GRAMMAR);
+        registerWord("(", WordType.GRAMMAR);
+        registerWord(")", WordType.GRAMMAR);
+        registerWord("_", WordType.GRAMMAR);
+        registerWord("-", WordType.GRAMMAR);
+        registerWord("+", WordType.GRAMMAR);
+        registerWord("=", WordType.GRAMMAR);
+        registerWord("\\", WordType.GRAMMAR);
+
+        Collections.sort(grammar);
+        Collections.sort(nouns);
+        Collections.sort(names);
+        Collections.sort(pronouns);
+        Collections.sort(determiners);
+        Collections.sort(preposition);
+        Collections.sort(adjectives);
+        Collections.sort(adverbs);
+        Collections.sort(verbs);
+        Collections.sort(numeral);
+        Collections.sort(interjections);
+        Collections.sort(conjunctions);
     }
 
     public static WordType getWordType(String word) {

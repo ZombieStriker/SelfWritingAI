@@ -10,6 +10,9 @@ import me.zombie_striker.swai.world.Interpreter;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class BuildABotGame extends AbstractGame implements Interpreter {
 
@@ -29,12 +32,18 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     private PersonalityMatrix creator;
     private Interpreter interpreter;
 
+    public List<PersonalityMatrix> getMatrices() {
+        return Collections.singletonList(matrixToWorkOn);
+    }
+
+    private boolean warpspeed = true;
+
     public BuildABotGame(PersonalityMatrix creator, Interpreter interpreter, GameEnum gametype) {
         this.gametype = gametype;
         this.creator = creator;
         this.interpreter = interpreter;
         if (gametype == GameEnum.PONG) {
-            matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, false,1);
+            matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, false, 1);
             game = new PongGame(matrixToWorkOn, this, 0);
         }
     }
@@ -82,13 +91,11 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
             } else if (index == 9) {
                 matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableDecrement(matrixToWorkOn, inputs[17]);
             } else if (index == 10) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableIncrementBy(matrixToWorkOn, inputs[17], inputs[18]);
+                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableAdd(matrixToWorkOn, inputs[17], inputs[18]);
             } else if (index == 11) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableDecrementBy(matrixToWorkOn, inputs[17], inputs[18]);
+                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableSubtract(matrixToWorkOn, inputs[17], inputs[18]);
             } else if (index == 12) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableSetField(matrixToWorkOn, inputs[17], false, inputs[18]);
-            } else if (index == 13) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableSetField(matrixToWorkOn, inputs[17], true, inputs[18]);
+                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableSetField(matrixToWorkOn, inputs[17], inputs[18]);
             } else {
 
             }
@@ -172,7 +179,8 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
             int variable3 = -1;
            /* if (matrixToWorkOn.getCode()[i] == null || matrixToWorkOn.getCode()[i] instanceof AssignablePostField) {
                 lineCode = 0;
-            } else */if (matrixToWorkOn.getCode()[i] instanceof AssignableReturn) {
+            } else */
+            if (matrixToWorkOn.getCode()[i] instanceof AssignableReturn) {
                 lineCode = 1;
             } else if (matrixToWorkOn.getCode()[i] instanceof AssignableField) {
                 lineCode = 2;
@@ -204,24 +212,18 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
             } else if (matrixToWorkOn.getCode()[i] instanceof AssignableIncrement) {
                 lineCode = 9;
                 variable1 = ((AssignableIncrement) matrixToWorkOn.getCode()[i]).getField();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableIncrementBy) {
+            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableAdd) {
                 lineCode = 10;
-                variable1 = ((AssignableIncrementBy) matrixToWorkOn.getCode()[i]).getField();
-                variable2 = ((AssignableIncrementBy) matrixToWorkOn.getCode()[i]).getIncrementField();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableDecrementBy) {
+                variable1 = ((AssignableAdd) matrixToWorkOn.getCode()[i]).getField();
+                variable2 = ((AssignableAdd) matrixToWorkOn.getCode()[i]).getIncrementField();
+            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableSubtract) {
                 lineCode = 11;
-                variable1 = ((AssignableDecrementBy) matrixToWorkOn.getCode()[i]).getField();
-                variable2 = ((AssignableDecrementBy) matrixToWorkOn.getCode()[i]).getIncrementField();
+                variable1 = ((AssignableSubtract) matrixToWorkOn.getCode()[i]).getField();
+                variable2 = ((AssignableSubtract) matrixToWorkOn.getCode()[i]).getIncrementField();
             } else if (matrixToWorkOn.getCode()[i] instanceof AssignableSetField) {
-                if (((AssignableSetField) matrixToWorkOn.getCode()[i]).isUseField()) {
-                    lineCode = 12;
-                    variable1 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getField();
-                    variable2 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getSecondField();
-                } else {
-                    lineCode = 13;
-                    variable1 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getField();
-                    variable2 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getSecondField();
-                }
+                lineCode = 12;
+                variable1 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getField();
+                variable2 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getSecondField();
             } else {
 
             }
@@ -234,11 +236,11 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
 
         }
         linesOfCode[100 * batch] = gameScore;
-        linesOfCode[100 * batch+1] = goodToGo?1:0;
-        if(goodToGo){
+        linesOfCode[100 * batch + 1] = goodToGo ? 1 : 0;
+        if (goodToGo) {
             int[] gamevision = game.getVision();
-            for(int i = 0; i < Math.min(gamevision.length,17);i++){
-                linesOfCode[batch+2+i] = gamevision[i];
+            for (int i = 0; i < Math.min(gamevision.length, 17); i++) {
+                linesOfCode[batch + 2 + i] = gamevision[i];
             }
         }
         return linesOfCode;
@@ -282,5 +284,15 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
         if (matrix == creator)
             return highestGameScore;
         return 0;
+    }
+
+    @Override
+    public boolean getWarpSpeed() {
+        return warpspeed;
+    }
+
+    @Override
+    public void setWarpSpeed(boolean warpSpeed) {
+        this.warpspeed = warpSpeed;
     }
 }

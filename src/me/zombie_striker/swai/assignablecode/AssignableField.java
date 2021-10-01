@@ -26,8 +26,8 @@ public class AssignableField extends AssignableCode{
     @Override
     public String toString() {
         if(readonly)
-            return "FIELDRO ("+getName()+","+referenceID +")";
-        return "FIELD ("+getName()+","+referenceID +")";
+            return "FIELDRO ("+getName()+","+referenceID +");";
+        return "FIELD ("+getName()+","+referenceID +");";
     }
 
     @Override

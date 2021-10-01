@@ -3,6 +3,7 @@ package me.zombie_striker.swai.game;
 import me.zombie_striker.swai.data.PersonalityMatrix;
 import me.zombie_striker.swai.game.battledroids.BattleDroidSimulatorGame;
 import me.zombie_striker.swai.game.buildabot.BuildABotGame;
+import me.zombie_striker.swai.game.imagerecreator.DrawImageGame;
 import me.zombie_striker.swai.game.mario.MarioGame;
 import me.zombie_striker.swai.game.pong.PongGame;
 import me.zombie_striker.swai.game.writetext.WriteTextGame;
@@ -13,7 +14,8 @@ public enum GameEnum {
     MARIO,
     BATTLE,
     BUILDAPONG,
-    WRITE;
+    WRITE,
+    DRAW_CAT;
 
     public AbstractGame createNewGame(PersonalityMatrix matrix, Interpreter interpreter, int round){
         if(this==PONG)
@@ -26,6 +28,8 @@ public enum GameEnum {
             return new BuildABotGame(matrix,interpreter, PONG);
         if(this==WRITE)
             return new WriteTextGame(matrix,interpreter, round);
+        if(this==DRAW_CAT)
+            return new DrawImageGame(matrix,interpreter, round);
 
         return null;
     }

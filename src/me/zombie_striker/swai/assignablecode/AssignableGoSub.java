@@ -22,6 +22,6 @@ public class AssignableGoSub extends AssignableCode{
 
     @Override
     public String toString() {
-        return "GOSUB ("+lineToJumpTo+")";
+        return "GOSUB ("+lineToJumpTo+");";
     }
 }

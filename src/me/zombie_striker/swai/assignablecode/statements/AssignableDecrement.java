@@ -21,9 +21,9 @@ public class AssignableDecrement extends AssignableStatement {
             if (matrix.getCode()[fieldindex] instanceof AssignableField) {
                 if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
                     return;
-                if (matrix.getByteForField(fieldindex) < 0 || matrix.getByteForField(fieldindex) >= matrix.getPallet().length)
+                if (matrix.getIntAtField(fieldindex) < 0 || matrix.getIntAtField(fieldindex) >= matrix.getPallet().length)
                     return;
-                matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = (byte) (matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] - 1);
+                matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = (matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] - 1);
 
             }
     }

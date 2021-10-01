@@ -71,7 +71,7 @@ public class WriteTextGame extends AbstractGame {
 
     @Override
     public void handleInputs(int[] inputs) {
-        if (writerIndex == ((round/100)+1) * 100) {
+        if (writerIndex == ((round / 100) + 1) * 100) {
             writerIndex = alice_in_wonderland.size();
         }
         if (writerIndex < alice_in_wonderland.size()) {
@@ -92,7 +92,7 @@ public class WriteTextGame extends AbstractGame {
                     WordType type = WordBank.getWordType(alice_in_wonderland.get(writerIndex));
                     if (type != null && type != WordType.UNKNOWN) {
                         timesUsedPreviousWord++;
-                        if (timesUsedPreviousWord > 200) {
+                        if (timesUsedPreviousWord > 20) {
                             stoppedAt = writerIndex;
                             writerIndex = alice_in_wonderland.size();
                             return;
@@ -102,33 +102,9 @@ public class WriteTextGame extends AbstractGame {
                     previousWord = wordIndex;
                     timesUsedPreviousWord = 0;
                 }
-                int types = 12;
-                if (typeIndex % types == 0) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.GRAMMAR, wordIndex % WordBank.getAllType(WordType.GRAMMAR).size()));
-                } else if (typeIndex % types == 1) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.PRONOUNS, wordIndex % WordBank.getAllType(WordType.PRONOUNS).size()));
-                } else if (typeIndex % types == 2) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.NOUNS, wordIndex % WordBank.getAllType(WordType.NOUNS).size()));
-                } else if (typeIndex % types == 3) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.ADJECTIVES, wordIndex % WordBank.getAllType(WordType.ADJECTIVES).size()));
-                } else if (typeIndex % types == 4) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.ADVERBS, wordIndex % WordBank.getAllType(WordType.ADVERBS).size()));
-                } else if (typeIndex % types == 5) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.VERBS, wordIndex % WordBank.getAllType(WordType.VERBS).size()));
-                } else if (typeIndex % types == 6) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.DETERMINER, wordIndex % WordBank.getAllType(WordType.DETERMINER).size()));
-                } else if (typeIndex % types == 7) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.CONJUNCTION, wordIndex % WordBank.getAllType(WordType.CONJUNCTION).size()));
-                } else if (typeIndex % types == 8) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.PREPOSITION, wordIndex % WordBank.getAllType(WordType.PREPOSITION).size()));
-                } else if (typeIndex % types == 9) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.INTERJECTION, wordIndex % WordBank.getAllType(WordType.INTERJECTION).size()));
-                } else if (typeIndex % types == 10) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.NAME, wordIndex % WordBank.getAllType(WordType.NAME).size()));
-                } else if (typeIndex % types == 11) {
-                    computerGeneratedText.add(WordBank.getWord(WordType.NUMERAL, wordIndex % WordBank.getAllType(WordType.NUMERAL).size()));
-                } else {
-                    computerGeneratedText.add("[?]");
+                for(WordType wt : WordType.values())
+                if (typeIndex % WordType.values().length == wt.getId()) {
+                    computerGeneratedText.add(WordBank.getWord(wt, wordIndex % WordBank.getAllType(wt).size()));
                 }
             }
         } else {
@@ -148,20 +124,29 @@ public class WriteTextGame extends AbstractGame {
                         continue;
                     WordType type = WordBank.getWordType(alice_in_wonderland.get(wordindex));
                     WordType typechosen = WordBank.getWordType(computerGeneratedText.get(wordindex));
-                    if (alice_in_wonderland.get(wordindex).equalsIgnoreCase(computerGeneratedText.get(wordindex))) {
-                        interpreter.increaseScore(controller, 1000000);
-                    } else if (type == typechosen && type != null && type != WordType.UNKNOWN) {
-                        interpreter.increaseScore(controller, 1000);
+                    int typeListSize = 1;
+                    if (WordBank.getAllType(type) != null)
+                        typeListSize = WordBank.getAllType(type).size();
+                    if (alice_in_wonderland.get(wordindex).equals(computerGeneratedText.get(wordindex))) {
+                        if (type != WordType.GRAMMAR) {
+                            interpreter.increaseScore(controller, typeListSize * typeListSize);
+                        } else {
+                            interpreter.increaseScore(controller, 1);
+                        }
+                    } /*else if (type == typechosen && type != null && type != WordType.UNKNOWN) {
+                        if (typechosen != WordType.GRAMMAR)
+                            interpreter.increaseScore(controller, typeListSize);
                     } else if (computerGeneratedText.size() <= wordindex && typechosen != WordType.GRAMMAR) {
                         interpreter.increaseScore(controller, 1);
-                    }
+                    }*/
                     int wordindexForType = WordBank.getIndexForWord(alice_in_wonderland.get(wordindex));
                     int wordindexForTypeChosen = WordBank.getIndexForWord(computerGeneratedText.get(wordindex));
 
                     if (type != null && type != WordType.UNKNOWN) {
-                        int positiveCorrectionScore = WordBank.getAllType(type).size() - Math.abs(wordindexForType - wordindexForTypeChosen);
+                        int positiveCorrectionScore = Math.abs(wordindexForType - wordindexForTypeChosen);
+                        int positiveCorrectionScore2 = Math.abs(type.getId() - typechosen.getId());
                         if (positiveCorrectionScore > 0)
-                            interpreter.increaseScore(controller, positiveCorrectionScore);
+                            interpreter.increaseScore(controller, ((typeListSize-positiveCorrectionScore)*(20-positiveCorrectionScore2))/typeListSize);
                     }
 
                     if (sb.length() > 200) {
@@ -218,8 +203,10 @@ public class WriteTextGame extends AbstractGame {
                 for (int l = lastLines.length - 1; l > 0; l--) {
                     tempArray[l] = lastLines[l - 1];
                     if (lastLines[l] != null)
-                        if (lastLines[l].equalsIgnoreCase(sb.toString()))
+                        if (lastLines[l].equalsIgnoreCase(sb.toString())) {
                             hasSame = true;
+                            break;
+                        }
                 }
                 if (!hasSame) {
                     lastLines = tempArray;
@@ -229,7 +216,7 @@ public class WriteTextGame extends AbstractGame {
 
                 if (hasSame) {
                     sb = new StringBuilder();
-                } else {
+                } else if (sb.length() > 2) {
                     try {
                         if (fw == null) {
                             fw = new FileWriter(writeTo);
@@ -325,8 +312,8 @@ public class WriteTextGame extends AbstractGame {
             return newintArray;
         }
 
-        int[] vision = new int[4 * 100];
-        for (int i = 0; i < 100; i++) {
+        int[] vision = new int[4 * 200];
+        for (int i = 0; i < vision.length / 4; i++) {
             if (writerIndex - i < 0)
                 continue;
             if (writerIndex - i >= computerGeneratedText.size())
@@ -388,9 +375,9 @@ public class WriteTextGame extends AbstractGame {
             e.printStackTrace();
         }
         text = text.toLowerCase();
-        text = text.replaceAll("-", " ").replaceAll(",", " , ").replaceAll(":", "").replaceAll("\\)", "").replaceAll("\\(", "").replaceAll("\\?", " ? ").replaceAll(";", "").replaceAll("â", " ").replaceAll("\\!", " ! ").replaceAll("\t", " ").replaceAll("\\.", " . ")
+        text = text.replaceAll("-", " - ").replaceAll(",", " , ").replaceAll(":", "").replaceAll("\\)", " ) ").replaceAll("\\(", " ( ").replaceAll("\\?", " ? ").replaceAll(";", "").replaceAll("â", " ").replaceAll("\\!", " ! ").replaceAll("\t", " ").replaceAll("\\.", " . ")
                 .replaceAll("'", "").replaceAll("\"", " \" ").replaceAll("\n", " ").replaceAll(";", "")
-                .replaceAll("  ", " ").replaceAll("    ", " ").replaceAll("   ", " ").replaceAll("  ", " ");
+                .replaceAll("  ", " ").replaceAll("  ", " ").replaceAll("  ", " ").replaceAll("  ", " ");
         String[] words = text.split(" ");
         List<String> wor = new LinkedList<>();
         for (int i = 0; i < words.length; i++) {

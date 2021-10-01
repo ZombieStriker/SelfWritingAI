@@ -18,7 +18,7 @@ public class PongGame extends AbstractGame {
     private int ballDirX= 1*scalar;
     private int ballDirY = 1 *scalar;
 
-    private int paddleHeight = 8*scalar;
+    private int paddleHeight = 4*scalar;
     private int paddleHeightOffset = (20-8)*scalar;
     private int paddleXOffset = 35*scalar;
     private boolean fail = false;

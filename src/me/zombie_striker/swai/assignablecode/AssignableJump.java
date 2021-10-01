@@ -26,7 +26,7 @@ public class AssignableJump extends AssignableCode{
     public String toString() {
         if (useField) {
             if(matrix.getCode()[lineToSkipTo] instanceof AssignableField) {
-                return "JUMP ("+lineToSkipTo + ")  (" + matrix.getByteForField(lineToSkipTo) + ")";
+                return "JUMP ("+lineToSkipTo + ");";
             }else{
                 return "JUMP (INVALID)";
             }

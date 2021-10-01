@@ -19,6 +19,10 @@ public class DataBank {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
+    public static double sigmoid(double x) {
+        return (1/( 1 + Math.pow(Math.E,(-1*x))));
+    }
+
     public static String translate(int value) {
         if (value >= chars.length)
             return (value - chars.length) + "";
@@ -31,8 +35,8 @@ public class DataBank {
 
     public static Random seededRandom(int input1, int input2, int input3){
         Random random1 = new Random(input1);
-        Random random2 = new Random(random1.nextInt(1000)+input1);
-        Random random3 = new Random(random2.nextInt(1000)+random1.nextInt(input1)+input2);
+        Random random2 = new Random(random1.nextInt(369)+input1);
+        Random random3 = new Random(random2.nextInt(7183043)+random1.nextInt(input2+1254)+(input3+1));
 
         INCREMENTALRANDOMNESS++;
         if(INCREMENTALRANDOMNESS> 123456789){

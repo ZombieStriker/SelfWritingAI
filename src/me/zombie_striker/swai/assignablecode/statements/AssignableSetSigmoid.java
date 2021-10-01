@@ -3,17 +3,22 @@ package me.zombie_striker.swai.assignablecode.statements;
 import me.zombie_striker.swai.assignablecode.AssignableCode;
 import me.zombie_striker.swai.assignablecode.AssignableField;
 import me.zombie_striker.swai.assignablecode.AssignableStatement;
+import me.zombie_striker.swai.data.DataBank;
 import me.zombie_striker.swai.data.PersonalityMatrix;
 
-public class AssignableIncrement extends AssignableStatement {
+import java.util.Random;
+
+public class AssignableSetSigmoid extends AssignableStatement {
 
     private PersonalityMatrix matrix;
     private int fieldindex;
+private int extendedRangePallet;
 
-    public AssignableIncrement(PersonalityMatrix matrix, int fieldindex) {
-        super("INCREMENT", null);
+    public AssignableSetSigmoid(PersonalityMatrix matrix, int fieldindex, int extendedRange) {
+        super("SIGMOID", null);
         this.matrix = matrix;
         this.fieldindex = fieldindex;
+        this.extendedRangePallet = extendedRange;
     }
 
     public void call() {
@@ -21,25 +26,22 @@ public class AssignableIncrement extends AssignableStatement {
             if (matrix.getCode()[fieldindex] instanceof AssignableField) {
                 if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
                     return;
-                if (matrix.getIntAtField(fieldindex) < 0 || matrix.getIntAtField(fieldindex) >= matrix.getPallet().length)
-                    return;
-                matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] = (matrix.getPallet()[((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex()] + 1);
+                    matrix.getPallet()[(((AssignableField) matrix.getCode()[fieldindex]).getPalletIndex())] = (int) (DataBank.sigmoid(((AssignableField) matrix.getCode()[fieldindex]).getObjectInstance()*extendedRangePallet) );
             }
     }
 
-
     @Override
     public String toString() {
-        return "INC (" + fieldindex + ");";
+        return "SIGMOID (" + fieldindex +","+extendedRangePallet+ ");";
     }
 
     @Override
     public AssignableCode clone(PersonalityMatrix matrix) {
-        return new AssignableIncrement(matrix, fieldindex);
+        return new AssignableSetSigmoid(matrix,  fieldindex,extendedRangePallet);
     }
-
 
     public int getField() {
         return fieldindex;
     }
+
 }

@@ -32,7 +32,7 @@ public class MarioGame extends AbstractGame {
 
     private int[] magicmatrix = {12, 110, 100, 9, 85, 7, 65, 5, 45, 3, 25, 1, 1005, 2005, 3003 ,400 ,5003, 2, 4, 6, 8, 10};
 
-    private Tile[][] tilesAroundChar = new Tile[400][10];
+    private Tile[][] tilesAroundChar = new Tile[1400][10];
     private double gravity = 0.09;
     private boolean fail = false;
 
@@ -71,10 +71,10 @@ public class MarioGame extends AbstractGame {
             return;
         }
 
-        int height = randomNumber5 % 4;
+        int height = randomNumber5 % 6;
         for (int j = 0; j < 10; j++) {
             if (height > j) {
-                tilesAroundChar[i][j] = new Tile(i, j, randomNumber6 % 4);
+                tilesAroundChar[i][j] = new Tile(i, j, randomNumber6 % 6);
             } else {
                 tilesAroundChar[i][j] = new Tile(i, j, 0);
             }
@@ -101,12 +101,12 @@ public class MarioGame extends AbstractGame {
 
         Tile tileFrontofMario = null;
         if ((marioX / tilesize) >= 0)
-            if (marioY >= 0 && marioY + marioYDir < tilesAroundChar[(int) (marioX / tilesize)].length)
+            if (marioY >= 0 && marioY < tilesAroundChar[(int) ((marioX + marioWidth+1)/ tilesize)].length)
                 tileFrontofMario = tilesAroundChar[(int) ((marioX + marioWidth+1) / tilesize)][(int) (marioY)];
 
         Tile tileBackofMario = null;
         if ((marioX / tilesize) >= 0)
-            if (marioY >= 0 && marioY + marioYDir < tilesAroundChar[(int) (marioX / tilesize)].length)
+            if (marioY >= 0 && marioY < tilesAroundChar[(int) ((marioX - 1)  / tilesize)].length)
                 tileBackofMario = tilesAroundChar[(int) ((marioX - 1) / tilesize)][(int) (marioY)];
 
             if(tileUnderMario==null || tileUnderMario.getType()==0){
@@ -117,12 +117,12 @@ public class MarioGame extends AbstractGame {
         if (goingRight)
             if (tileFrontofMario != null && tileFrontofMario.getType() == 0) {
                 marioX+=marioWalkSpeed;
-               interpreter.increaseScore(controller, 100000);
+               interpreter.increaseScore(controller, 100);
             }
         if (goingLeft)
             if (tileBackofMario != null && tileBackofMario.getType() == 0) {
                 marioX -= marioWalkSpeed;
-                Main.gameworldInterpreter.loseScore(controller, 100000);
+                Main.gameworldInterpreter.loseScore(controller, 100);
             }
 
 
