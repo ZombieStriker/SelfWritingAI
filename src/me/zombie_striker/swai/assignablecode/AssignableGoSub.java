@@ -24,4 +24,9 @@ public class AssignableGoSub extends AssignableCode{
     public String toString() {
         return "GOSUB ("+lineToJumpTo+");";
     }
+
+
+    public void setSkippableLines(int skippablelines) {
+        this.lineToJumpTo = skippablelines;
+    }
 }

@@ -15,4 +15,8 @@ public interface Interpreter {
 
    boolean getWarpSpeed();
    void setWarpSpeed(boolean warpSpeed);
+   boolean hasEnabledFineTuning();
+   void setFineTuning(boolean b) ;
+
+    void divideScoreBy(PersonalityMatrix matrix, int i);
 }

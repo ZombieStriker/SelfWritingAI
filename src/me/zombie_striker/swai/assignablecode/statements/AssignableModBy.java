@@ -20,18 +20,18 @@ public class AssignableModBy extends AssignableStatement {
 
     public void call() {
         if (fieldindex >= 0 && matrix.getCode().length > fieldindex)
-            if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField) {
-                if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
-                    return;
-                if (matrix.getIntAtField(palletIndex) <= 0 || matrix.getIntAtField(palletIndex) >= matrix.getPallet().length)
-                    return;
-                if (matrix.getIntAtField(fieldindex) < 0 || matrix.getIntAtField(fieldindex) >= matrix.getPallet().length)
-                    return;
-                if((matrix.getPallet()[matrix.getIntAtField(palletIndex)])!=0) {
+            if (palletIndex >= 0 && matrix.getCode().length > palletIndex)
+                if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex] instanceof AssignableField) {
+                    if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
+                        return;
+                    if (matrix.getIntAtField(palletIndex) == 0)
+                        return;
+                    if (matrix.getIntAtField(fieldindex) < 0 || matrix.getIntAtField(fieldindex) >= matrix.getPallet().length)
+                        return;
                     matrix.getPallet()[matrix.getIntAtField(fieldindex)] =
                             (matrix.getIntAtField(fieldindex) % (matrix.getIntAtField(palletIndex)));
+
                 }
-            }
     }
 
     @Override

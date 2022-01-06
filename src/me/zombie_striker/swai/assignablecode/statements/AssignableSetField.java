@@ -20,6 +20,7 @@ public class AssignableSetField extends AssignableStatement {
 
     public void call() {
         if (fieldindex >= 0 && matrix.getCode().length > fieldindex) {
+            if (palletIndex >= 0 && matrix.getCode().length > palletIndex)
             if (matrix.getCode()[fieldindex] instanceof AssignableField) {
                 if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
                     return;
@@ -44,5 +45,13 @@ public class AssignableSetField extends AssignableStatement {
 
     public int getSecondField() {
         return palletIndex;
+    }
+
+
+    public void setFieldindex(int var1){
+        this.fieldindex = var1;
+    }
+    public void setVar2(int var2){
+        this.palletIndex = var2;
     }
 }

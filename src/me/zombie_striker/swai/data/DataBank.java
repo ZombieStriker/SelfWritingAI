@@ -35,14 +35,15 @@ public class DataBank {
 
     public static Random seededRandom(int input1, int input2, int input3){
         Random random1 = new Random(input1);
-        Random random2 = new Random(random1.nextInt(369)+input1);
-        Random random3 = new Random(random2.nextInt(7183043)+random1.nextInt(input2+1254)+(input3+1));
+        Random random2 = new Random(random1.nextInt(input2+100));
+        Random random3 = new Random(random2.nextInt(random1.nextInt(input1+6)+6)+random1.nextInt(input2+1254)+(input3+1)+127);
 
         INCREMENTALRANDOMNESS++;
         if(INCREMENTALRANDOMNESS> 123456789){
             INCREMENTALRANDOMNESS=9;
         }
-        return new Random(random3.nextInt(INCREMENTALRANDOMNESS));
+        //TODO: Figure out if this returns a constant/ if it needs to be increased
+        return new Random(12+random3.nextInt((15+input1+input2+input3) * random3.nextInt(100)+15)+765);
     }
 
     public static byte getIndexOf(char c) {

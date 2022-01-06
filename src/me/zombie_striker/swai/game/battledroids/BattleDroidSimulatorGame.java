@@ -46,9 +46,6 @@ public class BattleDroidSimulatorGame extends AbstractGame {
     private static HashMap<PersonalityMatrix, Tile> players = new HashMap<>();
     private static List<BulletTile> bulletTiles = new ArrayList<>();
 
-    private PersonalityMatrix controller;
-    private Interpreter interpreter;
-
     private int health = 5;
 
     private static int timer = 0;
@@ -56,7 +53,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
 
     @Override
     public void onTerminate() {
-        players.remove(controller);
+        players.remove(getControllers()[0]);
         if (players.size() <= 0)
             resetMap();
     }
@@ -74,7 +71,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
                     if (map[(int) (bt.getX() + bt.getXD())][0][(int) (bt.getY() + bt.getZD())] != null) {
                         if (map[(int) (bt.getX() + bt.getXD())][0][(int) (bt.getY() + bt.getZD())].getType() == 4) {
                             map[(int) (bt.getX() + bt.getXD())][0][(int) (bt.getY() + bt.getZD())] = new Tile((int) (bt.getX() + bt.getXD()), (int) (bt.getY() + bt.getZD()), 3);
-                           interpreter.increaseScore(bt.getShooter(), 1000);
+                           getInterpreter().increaseScore(bt.getShooter(), 1000);
                             timer += timerIncreaseByPerShot;
                         }
                         deadBullets[i] = bt;
@@ -97,8 +94,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
     }
 
     public BattleDroidSimulatorGame(PersonalityMatrix controller, Interpreter interpreter, int round) {
-        this.controller = controller;
-        this.interpreter = interpreter;
+        super(null,controller,interpreter);
         if (map == null) {
             resetMap();
         }
@@ -120,7 +116,11 @@ public class BattleDroidSimulatorGame extends AbstractGame {
     }
 
     @Override
-    public void handleInputs(int[] inputs) {
+    public boolean displayOneView() {
+        return true;
+    }
+    @Override
+    public void handleInputs(PersonalityMatrix old, int[] inputs) {
         forward = inputs[0]> 0;
         back = inputs[1]> 0;
         left = inputs[2]> 0;
@@ -135,7 +135,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
 
     @Override
     public void tick(int linesRan) {
-        interpreter.increaseScore(controller, 1);
+        getInterpreter().increaseScore(getControllers()[0], 1);
         if (lookleft) {
             yaw -= Math.PI / 40;
         }
@@ -167,7 +167,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
                 if (map[(int) droidX][0][(int) droidZ].getType() == 3) {
                     health--;
                     if(health<=0) {
-                        interpreter.onTerminate(controller);
+                        getInterpreter().onTerminate(getControllers()[0]);
                         map[(int) droidX][0][(int) droidZ] = null;
                         return;
                     }
@@ -209,12 +209,12 @@ public class BattleDroidSimulatorGame extends AbstractGame {
                         double xdelta = Math.cos((yaw / Math.PI));
                         double zdelta = Math.sin((yaw / Math.PI));
 
-                        BulletTile newBullet = new BulletTile(droidX + xdelta, droidZ + zdelta, xdelta, zdelta, controller);
+                        BulletTile newBullet = new BulletTile(droidX + xdelta, droidZ + zdelta, xdelta, zdelta, getControllers()[0]);
 
                         if (map[(int) (droidX + xdelta)][(int) droidY][(int) (droidZ + zdelta)] != null) {
                             if (map[(int) (droidX + xdelta)][(int) droidY][(int) (droidZ + zdelta)].getType() == 4) {
                                 map[(int) (droidX + xdelta)][(int) droidY][(int) (droidZ + zdelta)] = new Tile(droidX + xdelta, droidZ + zdelta, 3);
-                                interpreter.increaseScore(controller, 1000);
+                                getInterpreter().increaseScore(getControllers()[0], 1000);
                                 timer += timerIncreaseByPerShot;
                             }
                         } else {
@@ -225,7 +225,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
                 }
         }
         if (timer <= 0) {
-            interpreter.onTerminate(controller);
+            getInterpreter().onTerminate(getControllers()[0]);
             return;
         }
     }
@@ -235,7 +235,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
         BufferedImage subimage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
         Graphics2D gs = (Graphics2D) subimage.getGraphics();
         int[] visionDistance = getVisionDistance();
-        int[] vision = getVision();
+        int[] vision = getVision(getControllers()[0]);
         for (int i = 0; i < 100; i++) {
             if (vision[INPUTS + i] == 1) {
                 gs.setColor(new Color(67, 78, 105));
@@ -300,7 +300,7 @@ public class BattleDroidSimulatorGame extends AbstractGame {
     public static final int INPUTS = 5;
 
     @Override
-    public int[] getVision() {
+    public int[] getVision(PersonalityMatrix old) {
         int[] vision = new int[INPUTS + 100];
         vision[0] = (byte) droidX;
         vision[1] = (byte) droidY;
@@ -341,5 +341,10 @@ public class BattleDroidSimulatorGame extends AbstractGame {
         }
 
         return vision;
+    }
+
+    @Override
+    public boolean isActive() {
+        return health > 0 && timer > 0;
     }
 }

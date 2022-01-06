@@ -1,8 +1,6 @@
 package me.zombie_striker.swai.game.writetext;
 
 
-import javax.naming.Name;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,6 +74,7 @@ public class WordBank {
     }
 
     public static void initWords() {
+
         registerWord("he", PRONOUNS);
         registerWord("she", PRONOUNS);
         registerWord("his", DETERMINER);
@@ -399,7 +398,6 @@ public class WordBank {
         registerWord("twice", ADVERBS);
         registerWord("peeped", VERBS);
         registerWord("pictures", VERBS);
-        registerWord("and ", DETERMINER);
         registerWord("tired", ADJECTIVES);
         registerWord("aftaid", ADJECTIVES);
         registerWord("hole", NOUNS);
@@ -889,6 +887,8 @@ public class WordBank {
         Collections.sort(conjunctions);
     }
 
+
+
     public static WordType getWordType(String word) {
         if (nouns.contains(word))
             return NOUNS;
@@ -997,8 +997,73 @@ public class WordBank {
         return null;
     }
 
-    public static int getIndexForWord(String s) {
+    public static String getWordAtIndex(int index){
+        int temp = index;
+        for(int w = 0; w < pronouns.size(); w++){
+            temp--;
+            if(temp<0)
+                return pronouns.get(w);
+        }
+        for(int w = 0; w < names.size(); w++){
+            temp--;
+            if(temp<0)
+                return names.get(w);
+        }
+        for(int w = 0; w < nouns.size(); w++){
+            temp--;
+            if(temp<0)
+                return nouns.get(w);
+        }
+        for(int w = 0; w < adjectives.size(); w++){
+            temp--;
+            if(temp<0)
+                return adjectives.get(w);
+        }
+        for(int w = 0; w < adverbs.size(); w++){
+            temp--;
+            if(temp<0)
+                return adverbs.get(w);
+        }
+        for(int w = 0; w < grammar.size(); w++){
+            temp--;
+            if(temp<0)
+                return grammar.get(w);
+        }
 
+        for(int w = 0; w < determiners.size(); w++){
+            temp--;
+            if(temp<0)
+                return determiners.get(w);
+        }
+        for(int w = 0; w < verbs.size(); w++){
+            temp--;
+            if(temp<0)
+                return verbs.get(w);
+        }
+        for(int w = 0; w < conjunctions.size(); w++){
+            temp--;
+            if(temp<0)
+                return conjunctions.get(w);
+        }
+        for(int w = 0; w < preposition.size(); w++){
+            temp--;
+            if(temp<0)
+                return preposition.get(w);
+        }
+        for(int w = 0; w < interjections.size(); w++){
+            temp--;
+            if(temp<0)
+                return interjections.get(w);
+        }
+        for(int w = 0; w < numeral.size(); w++){
+            temp--;
+            if(temp<0)
+                return numeral.get(w);
+        }
+        return null;
+    }
+
+    public static int getIndexForWord(String s) {
         for (int wordIndex = 0; wordIndex < pronouns.size(); wordIndex++)
             if (pronouns.get(wordIndex).equalsIgnoreCase(s))
                 return wordIndex;

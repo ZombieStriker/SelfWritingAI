@@ -29,8 +29,7 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     private AbstractGame game;
     private GameEnum gametype;
 
-    private PersonalityMatrix creator;
-    private Interpreter interpreter;
+    private boolean finetuning = false;
 
     public List<PersonalityMatrix> getMatrices() {
         return Collections.singletonList(matrixToWorkOn);
@@ -38,10 +37,12 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
 
     private boolean warpspeed = true;
 
-    public BuildABotGame(PersonalityMatrix creator, Interpreter interpreter, GameEnum gametype) {
+    private int round;
+
+    public BuildABotGame(PersonalityMatrix creator, Interpreter interpreter, GameEnum gametype, int round) {
+        super(null,creator,interpreter);
         this.gametype = gametype;
-        this.creator = creator;
-        this.interpreter = interpreter;
+        this.round = round;
         if (gametype == GameEnum.PONG) {
             matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, false, 1);
             game = new PongGame(matrixToWorkOn, this, 0);
@@ -58,44 +59,21 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     }
 
     @Override
-    public void handleInputs(int[] inputs) {
+    public void handleInputs(PersonalityMatrix old, int[] inputs) {
         if (goodToGo)
             return;
         int highest_score = 0;
         int index = 0;
-        for (int i = 0; i < 14; i++) {
+        for (int i = 0; i < 25; i++) {
             if (inputs[i] > highest_score) {
                 index = i;
             }
         }
         if (matrixToWorkOn != null) {
             if (index == 0) {
-                //Do nothing. Write nothing.
-            } else if (index == 1) {
                 matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableReturn();
-                //  } else if (index == 2) {
-                //     matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableField(matrixToWorkOn,);
-                //TODO: DO NOT WRITE FIELDS RANDOMLY
-            } else if (index == 3) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableJump(matrixToWorkOn, inputs[19], false);
-            } else if (index == 4) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableJump(matrixToWorkOn, inputs[19], true);
-            } else if (index == 5) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableIfLessThan(matrixToWorkOn, inputs[17], inputs[18], inputs[19]);
-            } else if (index == 6) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableIfEquals(matrixToWorkOn, inputs[17], inputs[18], inputs[19]);
-            } else if (index == 7) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableGoSub(inputs[19]);
-            } else if (index == 8) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableIncrement(matrixToWorkOn, inputs[17]);
-            } else if (index == 9) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableDecrement(matrixToWorkOn, inputs[17]);
-            } else if (index == 10) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableAdd(matrixToWorkOn, inputs[17], inputs[18]);
-            } else if (index == 11) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableSubtract(matrixToWorkOn, inputs[17], inputs[18]);
-            } else if (index == 12) {
-                matrixToWorkOn.getCode()[indexOfWritingCode] = new AssignableSetField(matrixToWorkOn, inputs[17], inputs[18]);
+            } else if (index == 1) {
+                //TODO: Finish handling all code inputs
             } else {
 
             }
@@ -117,12 +95,12 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
                 }
             }
         } else {
-            int[] vision = game.getVision();
+            int[] vision = game.getVision(matrixToWorkOn);
             for (int i = 0; i < vision.length; i++) {
                 matrixToWorkOn.getPalletReadOnly()[i] = vision[i];
             }
             int linesSubRan = matrixToWorkOn.run(false, -1);
-            game.handleInputs(handleSubGameInputs(matrixToWorkOn));
+            game.handleInputs(matrixToWorkOn,handleSubGameInputs(matrixToWorkOn));
             game.tick(linesRan);
         }
     }
@@ -169,76 +147,29 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     }
 
     @Override
-    public int[] getVision() {
-        int batch = 5;
+    public int[] getVision(PersonalityMatrix old) {
+        int batch = 6;
         int[] linesOfCode = new int[100 * batch + 2];
         for (int i = Math.max(0, indexOfWritingCode - 50); i < Math.min(indexOfWritingCode + 50, matrixToWorkOn.getCode().length); i++) {
             int lineCode = -1;
             int variable1 = -1;
             int variable2 = -1;
             int variable3 = -1;
-           /* if (matrixToWorkOn.getCode()[i] == null || matrixToWorkOn.getCode()[i] instanceof AssignablePostField) {
-                lineCode = 0;
-            } else */
-            if (matrixToWorkOn.getCode()[i] instanceof AssignableReturn) {
-                lineCode = 1;
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableField) {
-                lineCode = 2;
-                variable1 = ((AssignableField) matrixToWorkOn.getCode()[i]).getReferenceID();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableJump) {
-                if (((AssignableJump) matrixToWorkOn.getCode()[i]).usesField()) {
-                    lineCode = 3;
-                    variable3 = ((AssignableJump) matrixToWorkOn.getCode()[i]).getLineToSkipTo();
-                } else {
-                    lineCode = 4;
-                    variable3 = ((AssignableJump) matrixToWorkOn.getCode()[i]).getLineToSkipTo();
-                }
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableIfLessThan) {
-                lineCode = 5;
-                variable1 = ((AssignableIfLessThan) matrixToWorkOn.getCode()[i]).getVar1();
-                variable2 = ((AssignableIfLessThan) matrixToWorkOn.getCode()[i]).getVar2();
-                variable3 = ((AssignableIfLessThan) matrixToWorkOn.getCode()[i]).getSkippableLines();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableIfEquals) {
-                lineCode = 6;
-                variable1 = ((AssignableIfEquals) matrixToWorkOn.getCode()[i]).getVar1();
-                variable2 = ((AssignableIfEquals) matrixToWorkOn.getCode()[i]).getVar2();
-                variable3 = ((AssignableIfEquals) matrixToWorkOn.getCode()[i]).getSkippableLines();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableGoSub) {
-                lineCode = 7;
-                variable3 = ((AssignableGoSub) matrixToWorkOn.getCode()[i]).getLineToJumpTo();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableDecrement) {
-                lineCode = 8;
-                variable1 = ((AssignableDecrement) matrixToWorkOn.getCode()[i]).getField();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableIncrement) {
-                lineCode = 9;
-                variable1 = ((AssignableIncrement) matrixToWorkOn.getCode()[i]).getField();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableAdd) {
-                lineCode = 10;
-                variable1 = ((AssignableAdd) matrixToWorkOn.getCode()[i]).getField();
-                variable2 = ((AssignableAdd) matrixToWorkOn.getCode()[i]).getIncrementField();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableSubtract) {
-                lineCode = 11;
-                variable1 = ((AssignableSubtract) matrixToWorkOn.getCode()[i]).getField();
-                variable2 = ((AssignableSubtract) matrixToWorkOn.getCode()[i]).getIncrementField();
-            } else if (matrixToWorkOn.getCode()[i] instanceof AssignableSetField) {
-                lineCode = 12;
-                variable1 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getField();
-                variable2 = ((AssignableSetField) matrixToWorkOn.getCode()[i]).getSecondField();
-            } else {
-
-            }
+            int variable4 = -1;
+           //TODO: Work on vision
 
             linesOfCode[(i * batch) + 0] = i;
             linesOfCode[(i * batch) + 1] = lineCode;
             linesOfCode[(i * batch) + 2] = variable1;
             linesOfCode[(i * batch) + 3] = variable2;
             linesOfCode[(i * batch) + 4] = variable3;
+            linesOfCode[(i * batch) + 5] = variable4;
 
         }
         linesOfCode[100 * batch] = gameScore;
         linesOfCode[100 * batch + 1] = goodToGo ? 1 : 0;
         if (goodToGo) {
-            int[] gamevision = game.getVision();
+            int[] gamevision = game.getVision(matrixToWorkOn);
             for (int i = 0; i < Math.min(gamevision.length, 17); i++) {
                 linesOfCode[batch + 2 + i] = gamevision[i];
             }
@@ -249,18 +180,18 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     @Override
     public void loseScore(PersonalityMatrix matrix, int score) {
         gameScore -= Math.max(0, score);
-        interpreter.loseScore(creator, score);
+        getInterpreter().loseScore(getControllers()[0], Math.max(0,score));
     }
 
     @Override
     public void increaseScore(PersonalityMatrix matrix, int score) {
         gameScore += score;
-        interpreter.increaseScore(creator, score);
+        getInterpreter().increaseScore(getControllers()[0], Math.max(0,score));
     }
 
     public void onTerminate(PersonalityMatrix controller) {
-        if (rewriteAttempts >= 50) {
-            interpreter.onTerminate(creator);
+        if (rewriteAttempts >= Math.min(round/10,50)) {
+            getInterpreter().onTerminate(getControllers()[0]);
             return;
         }
         goodToGo = false;
@@ -268,20 +199,25 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
         interationsOfWritingCode = 0;
         if (highestGameScore < gameScore) {
             highestGameScore = gameScore;
-            interpreter.increaseScore(creator, 1000 * highestGameScore);
+            if(highestGameScore>0)
+            getInterpreter().increaseScore(getControllers()[0], 1000 * highestGameScore);
         }
         gameScore = 0;
         rewriteAttempts++;
 
         matrixToWorkOn = new PersonalityMatrix(100, 8, 3, 10, false, 1);
-        game = gametype.createNewGame(matrixToWorkOn, this, 1);
+        game = gametype.createNewGame(new PersonalityMatrix[]{matrixToWorkOn}, this, rewriteAttempts,1);
     }
 
+    @Override
+    public boolean displayOneView() {
+        return true;
+    }
     @Override
     public int getScore(PersonalityMatrix matrix) {
         if (matrix == matrixToWorkOn)
             return gameScore;
-        if (matrix == creator)
+        if (matrix == getControllers()[0])
             return highestGameScore;
         return 0;
     }
@@ -294,5 +230,24 @@ public class BuildABotGame extends AbstractGame implements Interpreter {
     @Override
     public void setWarpSpeed(boolean warpSpeed) {
         this.warpspeed = warpSpeed;
+    }
+
+
+    public boolean hasEnabledFineTuning() {
+        return finetuning;
+    }
+
+    public void setFineTuning(boolean b) {
+        this.finetuning = b;
+    }
+
+    @Override
+    public void divideScoreBy(PersonalityMatrix matrix, int i) {
+
+    }
+
+    @Override
+    public boolean isActive() {
+        return rewriteAttempts < Math.min(round/10,50);
     }
 }

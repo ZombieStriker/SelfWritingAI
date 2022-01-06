@@ -10,80 +10,68 @@ import java.util.Arrays;
 
 public class PongGame extends AbstractGame {
 
-    private int scalar = 10;
 
-    private int ballX = 0*scalar;
-    private int ballY = 20*scalar;
-
-    private int ballDirX= 1*scalar;
-    private int ballDirY = 1 *scalar;
-
-    private int paddleHeight = 4*scalar;
-    private int paddleHeightOffset = (20-8)*scalar;
-    private int paddleXOffset = 35*scalar;
     private boolean fail = false;
 
-    private PersonalityMatrix controller;
-    private Interpreter interpreter;
-
+    private int width = 40;
+    private int height = 40;
     public PongGame(PersonalityMatrix controller, Interpreter interpreter, int round){
-        this.controller = controller;
-        this.interpreter = interpreter;
-      //  ballDirY = (round%3)-1;
+        super(new PongMap(new PersonalityMatrix[]{controller},40,40), controller,interpreter);
     }
 
-    public void handleInputs(int[] inputs) {
+    public void handleInputs(PersonalityMatrix old, int[] inputs) {
         if(inputs[0]> 0&&inputs[1]> 0){
          return;
         }
         if (inputs[0] > 0) {
            // Main.gameworldInterpreter.loseScore(controller,1);
-            if (paddleHeightOffset > 0) {
-                paddleHeightOffset -= scalar;
+            if (((PongMap)getMap()).getPaddles()[0].getY() > 0) {
+                ((PongMap)getMap()).getPaddles()[0].setY(((PongMap)getMap()).getPaddles()[0].getY()-1);
             }
         }
         if (inputs[1]> 0) {
           //  Main.gameworldInterpreter.loseScore(controller,1);
-            if (paddleHeightOffset+paddleHeight < 40*scalar) {
-                paddleHeightOffset += scalar;
+            if (((PongMap)getMap()).getPaddles()[0].getY()+((PongMap)getMap()).getPaddles()[0].getHeight() < height) {(
+                    (PongMap)getMap()).getPaddles()[0].setY(((PongMap)getMap()).getPaddles()[0].getY()+1);
             }
         }
     }
 
     public void tick(int linesRan) {
-        if(fail)
+        if(fail) {
+            getInterpreter().onTerminate(getControllers()[0]);
             return;
+        }
         //Main.world.loseScore(controller,linesRan);
-        if(ballX + ballDirX < 0){
-            ballDirX=-ballDirX;
+        if(((PongMap)getMap()).getBall().getX() + ((PongMap)getMap()).getBall().getDx()< 0){
+            ((PongMap)getMap()).getBall().setDx(-((PongMap)getMap()).getBall().getDx());
         }
-        if((ballX + ballDirX)  == paddleXOffset){
-            if(ballY >= paddleHeightOffset && ballY <= paddleHeightOffset+paddleHeight) {
-                ballDirX=-ballDirX;
+        if((((PongMap)getMap()).getBall().getX() + ((PongMap)getMap()).getBall().getDx())  == ((PongMap)getMap()).getPaddles()[0].getX()){
+            if((((PongMap)getMap()).getBall().getY() >= ((PongMap)getMap()).getPaddles()[0].getY()) && (((PongMap)getMap()).getBall().getY() <= ((PongMap)getMap()).getPaddles()[0].getY()+((PongMap)getMap()).getPaddles()[0].getHeight())) {
+                ((PongMap)getMap()).getBall().setDx(-((PongMap)getMap()).getBall().getDx());
 
-                ballDirY = ballDirY + ((ballY - (paddleHeightOffset+paddleHeight/2))/scalar);
+                ((PongMap)getMap()).getBall().setDy(((PongMap)getMap()).getBall().getDy() + ((((PongMap)getMap()).getBall().getY() - (((PongMap)getMap()).getPaddles()[0].getY()+((PongMap)getMap()).getPaddles()[0].getHeight()/2))));
 
-                interpreter.increaseScore(controller,100);
+                getInterpreter().increaseScore(getControllers()[0],100);
             }
         }
-        if(ballX==paddleXOffset){
-            if(paddleHeightOffset < ballY){
-                interpreter.increaseScore(controller,30-(ballY-(paddleHeightOffset+paddleHeight)));
+        if((((PongMap)getMap()).getBall().getX()==((PongMap)getMap()).getPaddles()[0].getX())){
+            if(((PongMap)getMap()).getPaddles()[0].getY() < (((PongMap)getMap()).getBall().getY())){
+                getInterpreter().increaseScore(getControllers()[0],50-((((PongMap)getMap()).getBall().getY()-(((PongMap)getMap()).getPaddles()[0].getY()+(((PongMap)getMap()).getPaddles()[0].getHeight()/2)))));
             }else{
-                interpreter.increaseScore(controller,30-((paddleHeightOffset)-ballY));
+                getInterpreter().increaseScore(getControllers()[0],50-((((PongMap)getMap()).getPaddles()[0].getY()+(((PongMap)getMap()).getPaddles()[0].getHeight()/2))-((PongMap)getMap()).getBall().getY()));
             }
         }
-        if((ballX + ballDirX )> 40*scalar){
+        if(((PongMap)getMap()).getBall().getX() + (((PongMap)getMap()).getBall().getDx() )> width){
             //ballDirX=-ballDirX;
-            //fail = true;
-            interpreter.onTerminate(controller);
+            fail = true;
             return;
         }
-        if((ballY + ballDirY) > 40*scalar){
-            ballDirY=-ballDirY;
+        if((((PongMap)getMap()).getBall().getY() + ((PongMap)getMap()).getBall().getDy()) > height){
+            ((PongMap)getMap()).getBall().setDy(-((PongMap)getMap()).getBall().getDy());
         }
-        if((ballY + ballDirY) < 0*scalar){
-            ballDirY=-ballDirY;
+        if((((PongMap)getMap()).getBall().getY() + ((PongMap)getMap()).getBall().getDy()) < 0){
+            ((PongMap)getMap()).getBall().setDy(-((PongMap)getMap()).getBall().getDy());
         }
 
         /*if(ballDirX < 0){
@@ -94,8 +82,8 @@ public class PongGame extends AbstractGame {
             ballDirX=1;
         }*/
 
-        ballX += ballDirX;
-        ballY += ballDirY;
+        ((PongMap)getMap()).getBall().setX(((PongMap)getMap()).getBall().getX()+((PongMap)getMap()).getBall().getDx());
+        ((PongMap)getMap()).getBall().setY(((PongMap)getMap()).getBall().getY()+((PongMap)getMap()).getBall().getDy());
     }
 
     @Override
@@ -109,8 +97,8 @@ public class PongGame extends AbstractGame {
             gs.setColor(Color.BLACK);
             gs.fillRect(0, 0, subimage.getWidth(), subimage.getHeight());
             gs.setColor(Color.WHITE);
-            gs.fillRect(ballX/scalar, ballY/scalar, 1, 1);
-            gs.fillRect(paddleXOffset/scalar, paddleHeightOffset/scalar, 1, paddleHeight/scalar);
+            gs.fillRect(((PongMap)getMap()).getBall().getX(), ((PongMap)getMap()).getBall().getY(), 1, 1);
+            gs.fillRect(((PongMap)getMap()).getPaddles()[0].getX(), ((PongMap)getMap()).getPaddles()[0].getY(), 1, ((PongMap)getMap()).getPaddles()[0].getHeight());
         }
         gs.dispose();
         return subimage;
@@ -127,18 +115,26 @@ public class PongGame extends AbstractGame {
     }
 
     @Override
-    public int[] getVision() {
-        int[] vision = new int[/*(9*9*2)+9*/10];
+    public boolean displayOneView() {
+        return true;
+    }
+    @Override
+    public int[] getVision(PersonalityMatrix old) {
+        int[] vision = new int[10];
         Arrays.fill(vision, (byte) 0);
 
-        vision[0]= (byte) ballX;
-        vision[1]= (byte) ballY;
-        vision[2]= (byte) ballDirX;
-        vision[3]= (byte) ballDirY;
-        vision[4]= (byte) paddleHeightOffset;
-        vision[5]= (byte) paddleXOffset;
-        vision[6]= (byte) paddleHeight;
-        //vision[(xoffset) + (yoffset*9)] = 1;
+        vision[0]= (byte) ((PongMap)getMap()).getBall().getX();
+        vision[1]= (byte) ((PongMap)getMap()).getBall().getY();
+        vision[2]= (byte) ((PongMap)getMap()).getBall().getDx();
+        vision[3]= (byte) ((PongMap)getMap()).getBall().getDy();
+        vision[4]= (byte) ((PongMap)getMap()).getPaddles()[0].getX();
+        vision[5]= (byte) ((PongMap)getMap()).getPaddles()[0].getY();
+        vision[6]= (byte) ((PongMap)getMap()).getPaddles()[0].getHeight();
         return vision;
+    }
+
+    @Override
+    public boolean isActive() {
+        return !fail;
     }
 }

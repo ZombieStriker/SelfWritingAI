@@ -17,9 +17,6 @@ import java.util.List;
 
 public class WriteTextGame extends AbstractGame {
 
-    private PersonalityMatrix controller;
-    private Interpreter interpreter;
-
     private static List<String> alice_in_wonderland;
     private List<String> computerGeneratedText;
     private int writerIndex = 0;
@@ -27,6 +24,7 @@ public class WriteTextGame extends AbstractGame {
     private int round;
 
     private static String[] lastLines = new String[900];
+    private static int previousBestScore = 0;
 
     private File writeTo;
     private FileWriter fw;
@@ -52,15 +50,15 @@ public class WriteTextGame extends AbstractGame {
     }
 
     public WriteTextGame(PersonalityMatrix personalityMatrix, Interpreter interpreter, int round) {
-        this.controller = personalityMatrix;
-        this.interpreter = interpreter;
+        super(null,personalityMatrix,interpreter);
         computerGeneratedText = new LinkedList<>();
         this.round = round;
         File f1 = new File(Main.getRunningJarLocation().getParentFile(), "TextLogs");
         if (!f1.exists())
             f1.mkdirs();
-        writeTo = new File(f1, "Round_" + round + "_text_" + controller.getUUID().toString() + ".txt");
+        writeTo = new File(f1, "Round_" + round + "_text_" + getControllers()[0].getUUID().toString() + ".txt");
 
+        writerIndex += 40;
     }
 
     private StringBuilder sb = new StringBuilder();
@@ -69,42 +67,75 @@ public class WriteTextGame extends AbstractGame {
     private int previousWord = -1;
     private int timesUsedPreviousWord = 0;
 
+    private int maxWords = 20;
+
     @Override
-    public void handleInputs(int[] inputs) {
+    public void handleInputs(PersonalityMatrix old, int[] inputs) {
         if (writerIndex == ((round / 100) + 1) * 100) {
             writerIndex = alice_in_wonderland.size();
         }
         if (writerIndex < alice_in_wonderland.size()) {
             writerIndex++;
             if (writerIndex < alice_in_wonderland.size()) {
-                int typeIndex = inputs[0];
-                int wordIndexSingle = inputs[1];
-                int wordIndexTens = inputs[2];
-                int wordIndexHundreds = inputs[3];
-                int wordIndex = (wordIndexHundreds * 100) + (wordIndexTens * 10) + wordIndexSingle;
-                if (typeIndex < 0) {
-                    typeIndex = -typeIndex;
-                }
-                if (wordIndex < 0) {
-                    wordIndex = -(wordIndex);
-                }
-                if (previousWord == wordIndex) {
+                if(true){
+                    int highestScore = 0;
+                    int highscoreindex = 0;
+                    for(int i = 0; i < inputs.length;i++){
+                        if(inputs[i] > highestScore){
+                            highscoreindex = i;
+                            highestScore = inputs[i];
+                        }
+                    }
+                    String word = WordBank.getWordAtIndex(highscoreindex);
                     WordType type = WordBank.getWordType(alice_in_wonderland.get(writerIndex));
+
                     if (type != null && type != WordType.UNKNOWN) {
-                        timesUsedPreviousWord++;
-                        if (timesUsedPreviousWord > 20) {
+                        if (maxWords < 0) {
+                            stoppedAt = writerIndex;
+                            writerIndex = alice_in_wonderland.size();
+                            return;
+                        }else{
+                            maxWords--;
+                        }
+                    }
+
+                    if(word==null){
+                        computerGeneratedText.add("[?]");
+                    }else{
+                        WordType typechosen = WordBank.getWordType(word);
+                        if (typechosen.getId() == type.getId()) {
+                            maxWords += 1;
+                        }
+                        computerGeneratedText.add(word);
+                    }
+
+                }else {
+                    int typeIndex = inputs[0];
+                    int wordIndexSingle = inputs[1];
+                    int wordIndexTens = inputs[2];
+                    int wordIndexHundreds = inputs[3];
+                    int wordIndex = (wordIndexHundreds * 100) + (wordIndexTens * 10) + wordIndexSingle;
+                    if (typeIndex < 0) {
+                        typeIndex = -typeIndex;
+                    }
+                    if (wordIndex < 0) {
+                        wordIndex = -(wordIndex);
+                    }
+                    WordType type = WordBank.getWordType(alice_in_wonderland.get(writerIndex));
+                    if (typeIndex == type.getId() || type == WordType.UNKNOWN) {
+                        maxWords += 1;
+                    }
+                    if (type != null && type != WordType.UNKNOWN) {
+                        if (maxWords < writerIndex) {
                             stoppedAt = writerIndex;
                             writerIndex = alice_in_wonderland.size();
                             return;
                         }
                     }
-                } else {
-                    previousWord = wordIndex;
-                    timesUsedPreviousWord = 0;
-                }
-                for(WordType wt : WordType.values())
-                if (typeIndex % WordType.values().length == wt.getId()) {
-                    computerGeneratedText.add(WordBank.getWord(wt, wordIndex % WordBank.getAllType(wt).size()));
+                    for (WordType wt : WordType.values())
+                        if ((typeIndex % WordType.values().length) == wt.getId()) {
+                            computerGeneratedText.add(WordBank.getWord(wt, wordIndex % WordBank.getAllType(wt).size()));
+                        }
                 }
             }
         } else {
@@ -129,37 +160,36 @@ public class WriteTextGame extends AbstractGame {
                         typeListSize = WordBank.getAllType(type).size();
                     if (alice_in_wonderland.get(wordindex).equals(computerGeneratedText.get(wordindex))) {
                         if (type != WordType.GRAMMAR) {
-                            interpreter.increaseScore(controller, typeListSize * typeListSize);
+                            getInterpreter().increaseScore(getControllers()[0], typeListSize * typeListSize);
                         } else {
-                            interpreter.increaseScore(controller, 1);
+                            getInterpreter().increaseScore(getControllers()[0], 1);
                         }
-                    } /*else if (type == typechosen && type != null && type != WordType.UNKNOWN) {
-                        if (typechosen != WordType.GRAMMAR)
-                            interpreter.increaseScore(controller, typeListSize);
-                    } else if (computerGeneratedText.size() <= wordindex && typechosen != WordType.GRAMMAR) {
-                        interpreter.increaseScore(controller, 1);
-                    }*/
-                    int wordindexForType = WordBank.getIndexForWord(alice_in_wonderland.get(wordindex));
-                    int wordindexForTypeChosen = WordBank.getIndexForWord(computerGeneratedText.get(wordindex));
-
-                    if (type != null && type != WordType.UNKNOWN) {
+                    }else if (type == typechosen){
+                        getInterpreter().increaseScore(getControllers()[0],1);
+                    }
+                    /*if (type != null && type != WordType.UNKNOWN) {
                         int positiveCorrectionScore = Math.abs(wordindexForType - wordindexForTypeChosen);
                         int positiveCorrectionScore2 = Math.abs(type.getId() - typechosen.getId());
-                        if (positiveCorrectionScore > 0)
-                            interpreter.increaseScore(controller, ((typeListSize-positiveCorrectionScore)*(20-positiveCorrectionScore2))/typeListSize);
-                    }
+                        if (positiveCorrectionScore > 0) {
+                            int bap = ((typeListSize - positiveCorrectionScore) * (WordType.values().length - positiveCorrectionScore2)) / typeListSize;
+                            interpreter.increaseScore(controller, bap * bap);
+                        }
+                    }*/
+
 
                     if (sb.length() > 200) {
                         if (sb.toString().replaceAll("\\!", "").replaceAll(" ", "").replaceAll("\\.", "").replaceAll(",", "").replaceAll("\\?", "").length() <= 1) {
                             sb = new StringBuilder();
                         } else {
-                            try {
-                                if (fw == null) {
-                                    fw = new FileWriter(writeTo);
+                            if(previousBestScore < getInterpreter().getScore(getControllers()[0])){
+                                try {
+                                    if (fw == null) {
+                                        fw = new FileWriter(writeTo);
+                                    }
+                                    fw.write(sb.toString().replaceAll("\\! \\!", " !!").replaceAll("\\! \\!", " !!").replaceAll(" \\!", "!").replaceAll(" \\.", ".").replaceAll(" ,", ",") + "\n");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-                                fw.write(sb.toString().replaceAll("\\! \\!", " !!").replaceAll("\\! \\!", " !!").replaceAll(" \\!", "!").replaceAll(" \\.", ".").replaceAll(" ,", ",") + "\n");
-                            } catch (IOException e) {
-                                e.printStackTrace();
                             }
                             sb = new StringBuilder();
                         }
@@ -175,7 +205,7 @@ public class WriteTextGame extends AbstractGame {
     @Override
     public void tick(int linesRan) {
         if (writerIndex > alice_in_wonderland.size() * 2) {
-            interpreter.onTerminate(controller);
+            getInterpreter().onTerminate(getControllers()[0]);
         }
 
     }
@@ -217,27 +247,25 @@ public class WriteTextGame extends AbstractGame {
                 if (hasSame) {
                     sb = new StringBuilder();
                 } else if (sb.length() > 2) {
-                    try {
-                        if (fw == null) {
-                            fw = new FileWriter(writeTo);
-                        }
-                        fw.write(sb.toString().replaceAll("\\! \\!", " !!").replaceAll("\\! \\!", " !!").replaceAll(" \\!", "!").replaceAll(" \\.", ".").replaceAll(" ,", ",") + "\n");
+                    if(previousBestScore < getInterpreter().getScore(getControllers()[0])) {
+                        previousBestScore = getInterpreter().getScore(getControllers()[0]);
+                        try {
+                            if (fw == null) {
+                                fw = new FileWriter(writeTo);
+                            }
+                            fw.write(sb.toString().replaceAll("\\! \\!", " !!").replaceAll("\\! \\!", " !!").replaceAll(" \\!", "!").replaceAll(" \\.", ".").replaceAll(" ,", ",") + "\n");
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        wroteOnce = true;
+                        Main.log("Saving text " + writeTo.getName());
                     }
-                    wroteOnce = true;
                 }
             }
             if (fw != null) {
                 fw.flush();
                 fw.close();
-            }
-            if (!wroteOnce && sb.length() < 2) {
-                if (writeTo.exists())
-                    writeTo.delete();
-            } else {
-                Main.log("Saving text " + writeTo.getName());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -253,7 +281,7 @@ public class WriteTextGame extends AbstractGame {
     private int previousIndex = -1;
 
     @Override
-    public int[] getVision() {
+    public int[] getVision(PersonalityMatrix old) {
         if (writerIndex >= alice_in_wonderland.size()) {
             return new int[0];
         }
@@ -267,30 +295,7 @@ public class WriteTextGame extends AbstractGame {
 
             String word = alice_in_wonderland.get(writerIndex);
             WordType type = WordBank.getWordType(word);
-            if (type == WordType.GRAMMAR)
-                newintArray[0] = 0;
-            if (type == WordType.PRONOUNS)
-                newintArray[0] = 1;
-            if (type == WordType.NOUNS)
-                newintArray[0] = 2;
-            if (type == WordType.ADJECTIVES)
-                newintArray[0] = 3;
-            if (type == WordType.ADVERBS)
-                newintArray[0] = 4;
-            if (type == WordType.VERBS)
-                newintArray[0] = 5;
-            if (type == WordType.DETERMINER)
-                newintArray[0] = 6;
-            if (type == WordType.CONJUNCTION)
-                newintArray[0] = 7;
-            if (type == WordType.PREPOSITION)
-                newintArray[0] = 8;
-            if (type == WordType.INTERJECTION)
-                newintArray[0] = 9;
-            if (type == WordType.NAME)
-                newintArray[0] = 10;
-            if (type == WordType.NUMERAL)
-                newintArray[0] = 11;
+                newintArray[0] = type.getId();
 
             List<String> words = WordBank.getAllType(type);
             if (words == null) {
@@ -312,7 +317,7 @@ public class WriteTextGame extends AbstractGame {
             return newintArray;
         }
 
-        int[] vision = new int[4 * 200];
+        int[] vision = new int[4 * 10];
         for (int i = 0; i < vision.length / 4; i++) {
             if (writerIndex - i < 0)
                 continue;
@@ -364,6 +369,16 @@ public class WriteTextGame extends AbstractGame {
         previousIndex = writerIndex;
         previousVision = vision;
         return vision;
+    }
+
+    @Override
+    public boolean isActive() {
+        return writerIndex < (alice_in_wonderland.size()*2);
+    }
+
+    @Override
+    public boolean displayOneView() {
+        return true;
     }
 
     public static List<String> readAndCleanupText(String filename) {

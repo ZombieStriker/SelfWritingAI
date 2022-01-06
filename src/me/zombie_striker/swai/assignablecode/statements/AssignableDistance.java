@@ -26,16 +26,12 @@ public class AssignableDistance extends AssignableStatement {
 
     public void call() {
         if (fieldindex >= 0 && matrix.getCode().length > fieldindex)
+            if (palletIndex1 >= 0 && matrix.getCode().length > palletIndex1)
+                if (palletIndex2 >= 0 && matrix.getCode().length > palletIndex2)
+                    if (palletIndex3 >= 0 && matrix.getCode().length > palletIndex3)
+                        if (palletIndex4 >= 0 && matrix.getCode().length > palletIndex4)
             if (matrix.getCode()[fieldindex] instanceof AssignableField && matrix.getCode()[palletIndex1] instanceof AssignableField&& matrix.getCode()[palletIndex2] instanceof AssignableField) {
                 if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
-                    return;
-                if (matrix.getIntAtField(palletIndex1) < 0 || matrix.getIntAtField(palletIndex1) >= matrix.getPallet().length)
-                    return;
-                if (matrix.getIntAtField(palletIndex2) < 0 || matrix.getIntAtField(palletIndex2) >= matrix.getPallet().length)
-                    return;
-                if (matrix.getIntAtField(palletIndex3) < 0 || matrix.getIntAtField(palletIndex3) >= matrix.getPallet().length)
-                    return;
-                if (matrix.getIntAtField(palletIndex4) < 0 || matrix.getIntAtField(palletIndex4) >= matrix.getPallet().length)
                     return;
                 if (matrix.getIntAtField(fieldindex) < 0 || matrix.getIntAtField(fieldindex) >= matrix.getPallet().length)
                     return;

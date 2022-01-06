@@ -1,4 +1,4 @@
-package me.zombie_striker.swai.gamewindow;
+package me.zombie_striker.swai.windows;
 
 import me.zombie_striker.swai.Main;
 
@@ -15,7 +15,10 @@ public class Window extends Canvas implements Runnable {
     private JFrame window;
     public boolean running = true;
 
-    public Window() {
+    private WindowCore core;
+
+    public Window(WindowCore core) {
+        this.core = core;
         window = new JFrame("SWAI View");
         window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         window.setSize(1000, 1000+50);
@@ -24,6 +27,8 @@ public class Window extends Canvas implements Runnable {
         window.setResizable(false);
         window.setLocationRelativeTo(null);
         window.setVisible(true);
+
+        core.init(window);
 
         thread = new Thread(this);
         thread.start();
@@ -51,12 +56,11 @@ public class Window extends Canvas implements Runnable {
 
             boolean shouldRender = true;
 
-            //TODO:CHECK THIS
-            delta = 1;//Math.min(4,delta);
+            delta=1;
 
             while (delta >= 1) {
                 ticks++;
-                Main.gameworldInterpreter.tick();
+                core.tick();
                 delta--;
                 shouldRender = true;
             }
@@ -68,7 +72,7 @@ public class Window extends Canvas implements Runnable {
 
             if (shouldRender) {
                 frames++;
-                image = Main.render();
+                image = core.render(window);
                 render();
             }
 
@@ -78,6 +82,7 @@ public class Window extends Canvas implements Runnable {
                 ticks = 0;
             }
         }
+        Main.windows.remove(this);
     }
 
 

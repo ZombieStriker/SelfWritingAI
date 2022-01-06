@@ -23,6 +23,7 @@ private int extendedRangePallet;
 
     public void call() {
         if (fieldindex >= 0 && matrix.getCode().length > fieldindex)
+            if (extendedRangePallet >= 0 && matrix.getCode().length > extendedRangePallet)
             if (matrix.getCode()[fieldindex] instanceof AssignableField) {
                 if (((AssignableField) matrix.getCode()[fieldindex]).isReadOnly())
                     return;

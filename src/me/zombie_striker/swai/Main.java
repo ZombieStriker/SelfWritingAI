@@ -8,13 +8,14 @@ import me.zombie_striker.swai.game.battledroids.BattleDroidSimulatorGame;
 import me.zombie_striker.swai.game.buildabot.BuildABotGame;
 import me.zombie_striker.swai.game.imagerecreator.DrawImageGame;
 import me.zombie_striker.swai.game.mario.MarioGame;
+import me.zombie_striker.swai.game.pong.Pong2Game;
 import me.zombie_striker.swai.game.pong.PongGame;
 import me.zombie_striker.swai.game.writetext.WriteTextGame;
-import me.zombie_striker.swai.gamewindow.Window;
+import me.zombie_striker.swai.windows.Window;
+import me.zombie_striker.swai.windows.types.CodeViewerCore;
+import me.zombie_striker.swai.windows.types.GameViewWindowCore;
 import me.zombie_striker.swai.world.GameWorldInterpreter;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -27,19 +28,24 @@ public class Main {
 
     public static GameWorldInterpreter gameworldInterpreter = new GameWorldInterpreter();
 
-    public static Window window;
+    public static List<Window> windows = new LinkedList<>();
 
-    public static int PERSONALITIES_PER_ROW = 9;
+    public static int PERSONALITIES_PER_ROW = 6;
     public static int MAX_PERSONALITIES_PER_GAME = PERSONALITIES_PER_ROW * PERSONALITIES_PER_ROW;
+
+    public static void setPersonalitiesPerRow(int i){
+        PERSONALITIES_PER_ROW = i;
+        MAX_PERSONALITIES_PER_GAME = i*i;
+    }
 
     public static HashMap<PersonalityMatrix, AbstractGame> games = new HashMap<>();
     public static int round = 0;
     public static GameEnum gameType = null;
 
-    public static int bestscore = Integer.MIN_VALUE;
+   // public static int bestscore = Integer.MIN_VALUE;
     public static boolean reset = false;
 
-    private static String[] textlog = new String[20];
+    public static String[] textlog = new String[20];
 
 
     public static void log(String message) {
@@ -49,49 +55,6 @@ public class Main {
         textlog[0] = message;
     }
 
-    public static BufferedImage render() {
-        int index = 0;
-        BufferedImage image = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = (Graphics2D) image.getGraphics();
-        g.setColor(Color.DARK_GRAY);
-        g.fillRect(0, 0, image.getWidth(), image.getHeight());
-        List<PersonalityMatrix> list = new ArrayList<>(games.keySet());
-        Collections.sort(list);
-        g.setFont(new Font("Courier", Font.BOLD, 12));
-        for (PersonalityMatrix matrix : list) {
-            AbstractGame ag = games.get(matrix);
-            int xpos = index % (MAX_PERSONALITIES_PER_GAME / PERSONALITIES_PER_ROW);
-            int ypos = index / PERSONALITIES_PER_ROW;
-            int width = image.getWidth() / (MAX_PERSONALITIES_PER_GAME / PERSONALITIES_PER_ROW);
-            int height = (image.getHeight() - 200) / PERSONALITIES_PER_ROW;
-            BufferedImage render = ag.render();
-            g.drawImage(render, xpos * width, ypos * height, width, height, null);
-
-            Random seededRandom = new Random((matrix.getGeneration() * 3) + 0);
-            Random seededRandom2 = new Random((matrix.getGeneration() * 3) + 1);
-            Random seededRandom3 = new Random((matrix.getGeneration() * 3) + 2);
-
-            g.setColor(new Color(seededRandom.nextInt(255), seededRandom2.nextInt(255), seededRandom3.nextInt(255)));
-            g.fillRect(xpos * width, (ypos * height), width, 12);
-
-            g.setColor(Color.GRAY);
-            if(matrix.getUUID().toString().length() >= width/10) {
-                g.drawString(matrix.getUUID().toString().substring(0,width/10), xpos * width, (ypos * height) + 12);
-            }else{
-                g.drawString(matrix.getUUID().toString(), xpos * width, (ypos * height) + 12);
-            }
-            index++;
-        }
-        int textHeight = image.getHeight() - 200;
-
-        g.setColor(Color.WHITE);
-        for (int i = 0; i < textlog.length; i++) {
-            if (textlog[i] != null)
-                g.drawString(textlog[i], 0, textHeight + (12 * i) + 11);
-        }
-        g.dispose();
-        return image;
-    }
 
 
     public static void main(String... args) {
@@ -127,9 +90,6 @@ public class Main {
                     break;
                 }
             }
-            if (line.equalsIgnoreCase("show")) {
-                window = new Window();
-            }
             if (line.toLowerCase().startsWith("loadai")) {
                 String[] commandargs = line.split(" ");
                 if (commandargs.length == 1) {
@@ -147,6 +107,24 @@ public class Main {
 
                 System.out.println("Loaded " + loaded.getUUID().toString() + ".");
             }
+            if (line.toLowerCase().startsWith("view")) {
+                String[] commandargs = line.split(" ");
+                String name=null;
+                if (commandargs.length > 1) {
+                    name = commandargs[1];
+                }
+                File file = new File(getRunningJarLocation().getParentFile(), name+".machinecode");
+                PersonalityMatrix loaded;
+                if (name==null && gameworldInterpreter.getMatrices().size()>0) {
+                    loaded = gameworldInterpreter.getMatrices().get(0);
+                }else if (!file.exists()) {
+                    loaded = new PersonalityMatrix(100,10,5,10,true,0);
+                }else{
+                    loaded = PersonalityMatrix.load(file);
+                }
+                windows.add(new Window(new CodeViewerCore(loaded)));
+
+            }
             if (line.toLowerCase().startsWith("saveai")) {
                 String[] commandargs = line.split(" ");
                 if (commandargs.length == 1) {
@@ -155,7 +133,11 @@ public class Main {
                 }
                 int aiindex = 0;
                 if (commandargs.length > 1) {
-                    aiindex = Integer.parseInt(commandargs[1]);
+                    try {
+                        aiindex = Integer.parseInt(commandargs[1]);
+                    }catch(Exception e3){
+                        e3.printStackTrace();
+                    }
                 }
                 String name;
                 if (commandargs.length > 2) {
@@ -163,7 +145,16 @@ public class Main {
                 } else {
                     name = "" + DataBank.chars[ThreadLocalRandom.current().nextInt(DataBank.chars.length)] + DataBank.chars[ThreadLocalRandom.current().nextInt(DataBank.chars.length)] + DataBank.chars[ThreadLocalRandom.current().nextInt(DataBank.chars.length)];
                 }
-                PersonalityMatrix matrixToSave = gameworldInterpreter.getMatrices().get(Math.min(gameworldInterpreter.getMatrices().size(), aiindex));
+                PersonalityMatrix matrixToSave = null;
+                int countdown = aiindex;
+                for(Map.Entry<PersonalityMatrix, AbstractGame> p : games.entrySet()){
+                    if(countdown<=0){
+                        matrixToSave = p.getKey();
+                        break;
+                    }
+                    if(p.getValue().isActive())
+                    countdown--;
+                }
                 File writeTo = new File(getRunningJarLocation().getParentFile(), name + ".machinecode");
                 matrixToSave.saveTo(writeTo);
                 System.out.println("Saving PersonalityMatrix " + matrixToSave.getUUID().toString() + " to " + writeTo.getPath());
@@ -220,10 +211,22 @@ public class Main {
                     }
                 }
                 for (PersonalityMatrix matrix : gameworldInterpreter.getMatrices()) {
-                    games.put(matrix, new BuildABotGame(matrix, gameworldInterpreter, GameEnum.PONG));
+                    games.put(matrix, new BuildABotGame(matrix, gameworldInterpreter, GameEnum.PONG,0));
                 }
                 gameType = GameEnum.BUILDAPONG;
-                window = new Window();
+                windows.add( new Window(new GameViewWindowCore()));
+            } else if (line.toLowerCase().startsWith("runpong2")) {
+                if (gameworldInterpreter.getMatrices().size() < 2) {
+                    for (int i = 0; i < MAX_PERSONALITIES_PER_GAME; i++) {
+                        PersonalityMatrix matrix = gameworldInterpreter.createPersonality(500, 20, 3, 10, true);
+                        PersonalityMatrix matrix2 = gameworldInterpreter.createPersonality(500, 20, 3, 10, true);
+                        AbstractGame game = new Pong2Game(new PersonalityMatrix[]{matrix,matrix2}, gameworldInterpreter, 1);
+                       games.put(matrix, game);
+                        games.put(matrix2, game);
+                    }
+                }
+                gameType = GameEnum.PONG2;
+                windows.add( new Window(new GameViewWindowCore()));
             } else if (line.toLowerCase().startsWith("runpong")) {
                 if (gameworldInterpreter.getMatrices().size() == 0) {
                     for (int i = 0; i < MAX_PERSONALITIES_PER_GAME; i++) {
@@ -234,7 +237,7 @@ public class Main {
                     games.put(matrix, new PongGame(matrix, gameworldInterpreter, 1));
                 }
                 gameType = GameEnum.PONG;
-                window = new Window();
+                windows.add( new Window(new GameViewWindowCore()));
             } else if (line.toLowerCase().startsWith("runbattle")) {
                 if (gameworldInterpreter.getMatrices().size() == 0) {
                     for (int i = 0; i < MAX_PERSONALITIES_PER_GAME; i++) {
@@ -245,29 +248,30 @@ public class Main {
                     games.put(matrix, new BattleDroidSimulatorGame(matrix, gameworldInterpreter, 1));
                 }
                 gameType = GameEnum.BATTLE;
-                window = new Window();
+                windows.add( new Window(new GameViewWindowCore()));
             } else if (line.toLowerCase().startsWith("runwrite")) {
                 if (gameworldInterpreter.getMatrices().size() == 0) {
                     for (int i = 0; i < MAX_PERSONALITIES_PER_GAME; i++) {
-                        gameworldInterpreter.createPersonality(7000, 300, 5, 4 * 200, true);
+                        gameworldInterpreter.createPersonality(700+1000, 1000, 800, 4 * 10, true);
                     }
                 }
                 for (PersonalityMatrix matrix : gameworldInterpreter.getMatrices()) {
                     games.put(matrix, new WriteTextGame(matrix, gameworldInterpreter, round));
                 }
-                gameType = GameEnum.WRITE;
-                window = new Window();
+                gameType = GameEnum.WRITE_ALICE;
+                windows.add( new Window(new GameViewWindowCore()));
             } else if (line.toLowerCase().startsWith("rundraw")) {
                 if (gameworldInterpreter.getMatrices().size() == 0) {
                     for (int i = 0; i < MAX_PERSONALITIES_PER_GAME; i++) {
-                        gameworldInterpreter.createPersonality(1000, 100, 3, 40, true);
+                        PersonalityMatrix matrix = gameworldInterpreter.createPersonality(1200, 100, 3, 4+(15*15*3)+5, true);
+                        PersonalityMatrix matrix2 = gameworldInterpreter.createPersonality(1200, 100, 2, 4+(15*15*3)+5, true);
+                        AbstractGame game = new DrawImageGame(new PersonalityMatrix[]{matrix,matrix2}, gameworldInterpreter,0);
+                        games.put(matrix,game);
+                        games.put(matrix2,game);
                     }
                 }
-                for (PersonalityMatrix matrix : gameworldInterpreter.getMatrices()) {
-                    games.put(matrix, new DrawImageGame(matrix, gameworldInterpreter,0));
-                }
                 gameType = GameEnum.DRAW_CAT;
-                window = new Window();
+                windows.add( new Window(new GameViewWindowCore()));
             } else if (line.toLowerCase().startsWith("runmario")) {
                 if (gameworldInterpreter.getMatrices().size() == 0) {
                     for (int i = 0; i < MAX_PERSONALITIES_PER_GAME; i++) {
@@ -278,153 +282,8 @@ public class Main {
                     games.put(matrix, new MarioGame(matrix, gameworldInterpreter));
                 }
                 gameType = GameEnum.MARIO;
-                window = new Window();
-
-
-            } else if (line.startsWith("runall")) {
-                String[] commandargs = line.split(" ");
-                int timesRun = 1;
-                if (commandargs.length > 1)
-                    timesRun = Integer.parseInt(commandargs[1]);
-                int percetnage = 10;
-                if (commandargs.length > 2)
-                    percetnage = Integer.parseInt(commandargs[2]);
-
-                for (PersonalityMatrix matrix : gameworldInterpreter.getMatrices()) {
-                    matrix.populateRam();
-                }
-                List<PersonalityMatrix> best = new ArrayList<>();
-                for (int p = 0; p < timesRun; p++) {
-                    int aiIndex = 0;
-                    for (PersonalityMatrix matrix : gameworldInterpreter.getMatrices()) {
-                        System.out.println("============= Matrix " + aiIndex + " (" + matrix.getUUID().toString() + ")");
-                        matrix.populateRam();
-                        matrix.run();
-                        aiIndex++;
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    for (PersonalityMatrix matrix : gameworldInterpreter.getMatrices()) {
-                        int k = gameworldInterpreter.getScore(matrix);
-                        if (bestscore < k) {
-                            bestscore = k;
-                            best.clear();
-                            best.add(matrix);
-                        } else if (bestscore == k) {
-                            best.add(matrix);
-                        }
-                    }
-                    gameworldInterpreter.reset();
-                    if (p + 1 < timesRun) {
-                        gameworldInterpreter.purge();
-                        bestscore = Integer.MIN_VALUE;
-                        int amount = MAX_PERSONALITIES_PER_GAME;
-                        while (true) {
-                            for (PersonalityMatrix matrix : best) {
-                                amount--;
-                                PersonalityMatrix varied = matrix.clone();
-                                varied.setGeneration(round);
-                                varied.randomizeSomeLines(percetnage);
-                                gameworldInterpreter.addPersonality(varied);
-                                if (amount == 0)
-                                    break;
-                            }
-                            if (amount == 0)
-                                break;
-                        }
-                    } else {
-                        gameworldInterpreter.purge();
-                        for (PersonalityMatrix matrix : best) {
-                            gameworldInterpreter.addPersonality(matrix);
-                        }
-                    }
-                }
-
-                System.out.println("Done! Best pool contains \"" + best.size() + "\" with score " + bestscore);
+                windows.add( new Window(new GameViewWindowCore()));
             }
-
-        }
-    }
-
-    public static void postCall() {
-        if (!gameworldInterpreter.getWarpSpeed()) {
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        if (Main.reset) {
-            List<PersonalityMatrix> best = new ArrayList<>();
-            for (PersonalityMatrix matrix : Main.gameworldInterpreter.getMatrices()) {
-                int k = Main.gameworldInterpreter.getScore(matrix);
-                if (Main.bestscore < k) {
-                    Main.bestscore = k;
-                    best.clear();
-                    best.add(matrix);
-                } else if (Main.bestscore == k) {
-                    best.add(matrix);
-                }
-            }
-            Main.log("Best score for round " + Main.round + " = " + Main.bestscore + " (Batch = " + best.size() + ")");
-            Main.round++;
-            Main.gameworldInterpreter.reset();
-            Main.gameworldInterpreter.purge();
-            Main.games.clear();
-
-            int amount = 0;
-            Collections.sort(best);
-            Collections.reverse(best);
-
-            if (best.size() >= ((Main.MAX_PERSONALITIES_PER_GAME*2)/3)+1){
-                for (int i = 0; i < (PERSONALITIES_PER_ROW*2)/3;i++) {
-                    amount++;
-                    PersonalityMatrix same = best.get(DataBank.seededRandom(Math.abs(bestscore),MAX_PERSONALITIES_PER_GAME,PERSONALITIES_PER_ROW).nextInt(best.size())).clone();
-                    Main.gameworldInterpreter.addPersonality(same);
-                    Main.games.put(same, Main.gameType.createNewGame(same, Main.gameworldInterpreter, round));
-                }
-            }else {
-                for (PersonalityMatrix matrix : best) {
-                    if (best.size() >= ((MAX_PERSONALITIES_PER_GAME * 2) / 3) + 1)
-                        if (amount >= Main.MAX_PERSONALITIES_PER_GAME / PERSONALITIES_PER_ROW)
-                            break;
-                    amount++;
-                    PersonalityMatrix same = matrix.clone();
-                    Main.gameworldInterpreter.addPersonality(same);
-                    Main.games.put(same, Main.gameType.createNewGame(same, Main.gameworldInterpreter, round));
-                }
-            }
-
-            if (amount + best.size() > MAX_PERSONALITIES_PER_GAME) {
-                for (int count = amount; count < MAX_PERSONALITIES_PER_GAME; count++) {
-                    amount++;
-                    PersonalityMatrix varied = best.get(DataBank.seededRandom(amount,MAX_PERSONALITIES_PER_GAME,bestscore).nextInt(best.size())).clone();
-                    varied.setGeneration(Main.round);
-                    varied.improveCode((Math.sin(Main.round / 50.0) + 1) * 25);
-                    Main.gameworldInterpreter.addPersonality(varied);
-                    Main.games.put(varied, Main.gameType.createNewGame(varied, Main.gameworldInterpreter, round));
-                }
-            } else {
-                if (amount < Main.MAX_PERSONALITIES_PER_GAME)
-                    for (PersonalityMatrix matrix : best) {
-                        amount++;
-                        PersonalityMatrix varied = matrix.clone();
-                        varied.setGeneration(Main.round);
-                        varied.improveCode((int) (((Math.sin((double) Main.round / 50.0)) + 1) * 50));
-                        Main.gameworldInterpreter.addPersonality(varied);
-                        Main.games.put(varied, Main.gameType.createNewGame(varied, Main.gameworldInterpreter, round));
-                        if (amount == Main.MAX_PERSONALITIES_PER_GAME)
-                            break;
-                    }
-            }
-            //if (amount == Main.MAX_PERSONALITIES_PER_GAME)
-            //   break;
-            //}
-            Main.bestscore = Integer.MIN_VALUE;
-            Main.reset = false;
         }
     }
 

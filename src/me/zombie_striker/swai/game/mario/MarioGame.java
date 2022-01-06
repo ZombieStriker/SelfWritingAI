@@ -36,12 +36,8 @@ public class MarioGame extends AbstractGame {
     private double gravity = 0.09;
     private boolean fail = false;
 
-    private PersonalityMatrix controller;
-    private Interpreter interpreter;
-
     public MarioGame(PersonalityMatrix controller, Interpreter interpreter) {
-        this.controller = controller;
-        this.interpreter = interpreter;
+        super(null,controller,interpreter);
         for (int i = 0; i < tilesAroundChar.length; i++) {
             generateTileFor(i);
         }
@@ -84,7 +80,11 @@ public class MarioGame extends AbstractGame {
 
 
     @Override
-    public void handleInputs(int[] inputs) {
+    public boolean displayOneView() {
+        return true;
+    }
+    @Override
+    public void handleInputs(PersonalityMatrix old, int[] inputs) {
         goingRight = inputs[0]> 0;
         goingLeft = inputs[1]> 0;
         jumping = inputs[2]> 0;
@@ -117,12 +117,12 @@ public class MarioGame extends AbstractGame {
         if (goingRight)
             if (tileFrontofMario != null && tileFrontofMario.getType() == 0) {
                 marioX+=marioWalkSpeed;
-               interpreter.increaseScore(controller, 100);
+               getInterpreter().increaseScore(getControllers()[0], 100);
             }
         if (goingLeft)
             if (tileBackofMario != null && tileBackofMario.getType() == 0) {
                 marioX -= marioWalkSpeed;
-                Main.gameworldInterpreter.loseScore(controller, 100);
+               getInterpreter().loseScore(getControllers()[0], 100);
             }
 
 
@@ -138,14 +138,14 @@ public class MarioGame extends AbstractGame {
 
         marioY += marioYDir;
 
-        Main.gameworldInterpreter.loseScore(controller,linesRan/1000);
+        getInterpreter().loseScore(getControllers()[0],linesRan/1000);
         if (tileUnderMario == null && marioY < 4) {
             //   fail = true;
-            interpreter.onTerminate(controller);
+            getInterpreter().onTerminate(getControllers()[0]);
         }
         wallX += wallspeed;
         if (wallX >= marioX) {
-            interpreter.onTerminate(controller);
+            getInterpreter().onTerminate(getControllers()[0]);
         }
     }
 
@@ -200,7 +200,7 @@ public class MarioGame extends AbstractGame {
     }
 
     @Override
-    public int[] getVision() {
+    public int[] getVision(PersonalityMatrix old) {
         int[] vision = new int[3 + 100];
         vision[0] = (byte) marioX;
         vision[1] = (byte) marioY;
@@ -217,5 +217,10 @@ public class MarioGame extends AbstractGame {
             }
         }
         return vision;
+    }
+
+    @Override
+    public boolean isActive() {
+        return !fail;
     }
 }
